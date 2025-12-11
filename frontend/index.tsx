@@ -25,7 +25,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <GoogleReCaptchaProvider
-      reCaptchaKey="6Len1CgsAAAAACC9pky5RK9rVj0cp9Bdwoe4mYUu"
+      reCaptchaKey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
       scriptProps={{
         async: false,
         defer: false,
