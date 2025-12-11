@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, CheckCircle } from 'lucide-react';
 import { usePopup } from '../../contexts/PopupContext';
 import CustomSelect from './CustomSelect';
 
@@ -16,6 +16,7 @@ const AdmissionPopup: React.FC = () => {
         email: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<{ success: boolean; message: string } | null>(null);
 
     useEffect(() => {
         const hasBeenShown = sessionStorage.getItem('admissionPopupShown');
@@ -33,6 +34,7 @@ const AdmissionPopup: React.FC = () => {
         setTimeout(() => {
             closePopup();
             setIsClosing(false);
+            setSubmitStatus(null); // Reset status on close
         }, 300); // Match animation duration
     };
 
@@ -53,6 +55,7 @@ const AdmissionPopup: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setSubmitStatus(null);
         try {
             await api.post('/leads', {
                 name: formData.parentName,
@@ -65,13 +68,17 @@ const AdmissionPopup: React.FC = () => {
                 message: `Inquiry from Popup`,
                 status: 'NEW'
             });
-            alert('Inquiry submitted successfully!');
-            handleClose();
+
+            setSubmitStatus({ success: true, message: 'Inquiry submitted successfully!' });
             setFormData({ parentName: '', mobile: '', studentName: '', email: '' });
             setGradeLevel('');
+
+            // Auto close after 3 seconds
+            setTimeout(handleClose, 3000);
+
         } catch (error) {
             console.error(error);
-            alert('Failed to submit. Please try again.');
+            setSubmitStatus({ success: false, message: 'Failed to submit. Please try again.' });
         } finally {
             setIsSubmitting(false);
         }
@@ -168,10 +175,23 @@ const AdmissionPopup: React.FC = () => {
                                 direction="up"
                             />
                         </div>
-                        <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50">
-                            <Send className="w-5 h-5 mr-2" />
-                            {isSubmitting ? 'Submitting...' : 'Submit Inquiry'}
-                        </button>
+                        <div className="space-y-4">
+                            <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50">
+                                <Send className="w-5 h-5 mr-2" />
+                                {isSubmitting ? 'Submitting...' : 'Submit Inquiry'}
+                            </button>
+
+                            {submitStatus && (
+                                <div className={`p-3 rounded-lg flex items-center justify-center space-x-2 animate-fade-in-up ${submitStatus.success ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+                                    {submitStatus.success ? (
+                                        <CheckCircle className="w-5 h-5" />
+                                    ) : (
+                                        <X className="w-5 h-5" />
+                                    )}
+                                    <span className="font-semibold">{submitStatus.message}</span>
+                                </div>
+                            )}
+                        </div>
                     </form>
                 </div>
             </div>

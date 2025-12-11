@@ -226,6 +226,16 @@ const ContactPage: React.FC = () => {
                                 <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50">
                                     {isSubmitting ? 'Sending...' : 'Send Message'}
                                 </button>
+                                {submitStatus?.success && (
+                                    <div className="mt-4 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 flex items-center justify-center space-x-3 animate-fade-in-up mx-auto">
+                                        <div className="bg-green-100 dark:bg-green-800 p-1.5 rounded-full">
+                                            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                        </div>
+                                        <p className="text-green-700 dark:text-green-300 font-semibold">
+                                            Message received! We'll be in touch soon.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </form>
                     </div>
@@ -245,33 +255,6 @@ const ContactPage: React.FC = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Success Modal */}
-            {submitStatus?.success && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-slate-200 dark:border-slate-700 relative transform transition-all scale-100">
-                        <button
-                            onClick={() => setSubmitStatus(null)}
-                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                        >
-                            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                        </button>
-                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Message Sent!</h3>
-                        <p className="text-slate-600 dark:text-slate-300 mb-6">
-                            Thank you for contacting us. We have received your message and will get back to you shortly.
-                        </p>
-                        <button
-                            onClick={() => setSubmitStatus(null)}
-                            className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -64,6 +64,8 @@ const AdminDashboard: React.FC = () => {
         throw error;
       }
     },
+    // Auto-refresh every 5s for real-time feel
+    refetchInterval: 5000,
   });
 
   const { data: settings = { receiverEmail: '', isEnabled: true } } = useQuery({
@@ -437,7 +439,7 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                                   // Increased padding to px-4 py-2
                                   className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded shadow-sm border border-indigo-200 dark:border-indigo-800 transition-all hover:shadow-md"
                                 >
-                                  View Class
+                                  View Details
                                 </button>
                               </td>
                             </tr>
