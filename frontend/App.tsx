@@ -24,6 +24,7 @@ const CoCurricularPage = lazy(() => import('./pages/academics/CoCurricularPage')
 const AlumniPage = lazy(() => import('./pages/AlumniPage'));
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -85,6 +86,9 @@ const App: React.FC = () => {
                 {/* Admin Routes */}
                 <Route path="/admin/login" element={<AdminLoginPage />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+                {/* 404 Route */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
           </Layout>
