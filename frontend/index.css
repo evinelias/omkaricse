@@ -143,6 +143,18 @@ label,
     }
 }
 
+@theme {
+    --font-inter: 'Inter', sans-serif;
+    --font-outfit: 'Outfit', sans-serif;
+    --animate-subtle-pulse: subtle-pulse 3s infinite;
+    --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+}
+
+/* Ensure reCAPTCHA badge stays behind fixed elements like Chatbot */
+.grecaptcha-badge {
+    z-index: 40 !important;
+}
+
 .click-particle {
     position: fixed;
     pointer-events: none;

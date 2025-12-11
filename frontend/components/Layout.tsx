@@ -153,10 +153,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <>
           <Footer />
           {/* Floating Action Buttons */}
-          <div className="fixed bottom-8 right-8 z-[2147483647]">
+          <div className="fixed bottom-8 right-24 z-50">
             <Chatbot />
           </div>
-          <div className="fixed bottom-8 left-8 z-40">
+          <div className="fixed bottom-8 left-8 z-50">
             <ScrollToTopButton />
           </div>
           <AdmissionPopup />
