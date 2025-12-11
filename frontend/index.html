@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/images/omkar-logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Omkar International School</title>
+
+  <script>
+    // This is the crucial configuration that was missing.
+    // It tells Tailwind to use the 'class' strategy for dark mode.
+
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.0?deps=react@18.2.0,react-dom@18.2.0",
+    "lucide-react": "https://esm.sh/lucide-react@0.400.0?deps=react@18.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.18.0",
+    "marked": "https://esm.sh/marked@12.0.0",
+    "dompurify": "https://esm.sh/dompurify@3.0.9"
+  }
+}
+</script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -ms-overflow-style: none;
+      /* For Internet Explorer and Edge */
+      background-color: #f1f5f9;
+      /* Fallback */
+      background-image:
+        radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0.05) 0px, transparent 50%),
+        radial-gradient(at 98% 1%, hsla(220, 60%, 70%, 0.15) 0px, transparent 50%),
+        radial-gradient(at 79% 70%, hsla(240, 50%, 80%, 0.1) 0px, transparent 50%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
+    html.dark body {
+      background-color: #020617;
+      /* Fallback */
+      background-image:
+        radial-gradient(at 0% 100%, hsla(253, 16%, 7%, 1) 0px, transparent 50%),
+        radial-gradient(at 80% 0%, hsla(220, 39%, 20%, 1) 0px, transparent 50%),
+        radial-gradient(at 0% 0%, hsla(240, 40%, 30%, 1) 0px, transparent 50%);
+      background-attachment: fixed;
+      background-size: cover;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    blockquote {
+      text-wrap: balance;
+    }
+
+    .prose p {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    .prose ul {
+      list-style-position: inside;
+      padding-left: 0.5em;
+      margin: 0.5em 0;
+    }
+
+    .prose li {
+      margin-top: 0.25em;
+      margin-bottom: 0.25em;
+    }
+
+    .prose strong {
+      font-weight: 600;
+    }
+
+    .prose a {
+      color: #2563eb;
+    }
+
+    .dark .prose a {
+      color: #60a5fa;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideInFromRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes zoomIn {
+      from {
+        transform: scale(1.05);
+      }
+
+      to {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes slideshow-kenburns {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.1);
+      }
+    }
+
+    @keyframes subtle-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(var(--pulse-color), 0.7);
+      }
+
+      70% {
+        box-shadow: 0 0 0 15px rgba(var(--pulse-color), 0);
+      }
+    }
+
+    @keyframes textFadeInFromLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .animate-text-fade-in-from-left {
+      animation: textFadeInFromLeft 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .animate-fade-in-down {
+      animation: fadeInDown 0.8s ease-out forwards;
+    }
+
+    .animate-fade-in-up {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .animate-slide-in-from-left {
+      animation: slideInFromLeft 0.8s ease-out forwards;
+    }
+
+    .animate-slide-in-from-right {
+      animation: slideInFromRight 0.8s ease-out forwards;
+    }
+
+    .bg-zoom {
+      animation: zoomIn 20s ease-out forwards;
+    }
+
+    .animate-slideshow-kenburns {
+      animation: slideshow-kenburns 10s ease-out forwards;
+    }
+
+    .animate-subtle-pulse {
+      animation: subtle-pulse 2.5s infinite;
+    }
+
+    /* Hide Scrollbar Styles */
+    html {
+      scrollbar-width: none;
+      /* For Firefox */
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
+      /* For Webkit browsers */
+    }
+
+    /* New transition-based animation classes for scroll effects */
+    .scroll-reveal {
+      opacity: 0;
+      transition-property: opacity, transform;
+      transition-timing-function: ease-out;
+    }
+
+    .scroll-reveal.is-visible {
+      opacity: 1;
+      transform: translate(0, 0) !important;
+    }
+
+    /* Initial transform states */
+    .scroll-reveal.fade-in-up {
+      transform: translateY(20px);
+    }
+
+    .scroll-reveal.fade-in-down {
+      transform: translateY(-20px);
+    }
+
+    .scroll-reveal.slide-in-from-left {
+      transform: translateX(-30px);
+    }
+
+    .scroll-reveal.slide-in-from-right {
+      transform: translateX(30px);
+    }
+
+    /* Mouse Follow Blob Effect */
+    #blob {
+      background-image: radial-gradient(rgba(251, 191, 36, 0.6), transparent 60%);
+      height: 350px;
+      width: 350px;
+      border-radius: 50%;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      filter: blur(100px);
+      transition: background-image 0.3s ease;
+    }
+
+    html.dark #blob {
+      background-image: radial-gradient(rgba(115, 115, 255, 0.5), transparent 60%);
+    }
+
+    /* Custom DOM-based Animated Cursor */
+    body,
+    html {
+      cursor: none;
+    }
+
+    a,
+    button,
+    [role="button"],
+    input,
+    select,
+    label,
+    [onclick] {
+      /* Use !important to override any other cursor styles (like the hand pointer) */
+      cursor: none !important;
+    }
+
+    #custom-cursor {
+      position: fixed;
+      width: 48px;
+      height: 48px;
+      background-image: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-45 16 16)"><rect x="13" y="28" width="6" height="4" rx="1" fill="%23F4A7B9"/><rect x="13" y="25" width="6" height="3" fill="%23BDBDBD"/><rect x="13" y="7" width="6" height="18" fill="%23FFD54F"/><path d="M13 7 L19 7 L16 1 Z" fill="%23F5DEB3"/><path d="M15 4 L17 4 L16 1 Z" fill="%23424242"/></g></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.2s ease-out;
+      will-change: transform;
+      animation: cursor-wobble 1.5s ease-in-out infinite;
+      transform-origin: 8px 8px;
+      /* Set origin to pencil tip */
+    }
+
+    #custom-cursor.hover {
+      animation: none;
+      transform: rotate(0deg) scale(1.3);
+    }
+
+    @keyframes cursor-wobble {
+
+      0%,
+      100% {
+        transform: rotate(5deg) scale(1);
+      }
+
+      50% {
+        transform: rotate(-5deg) scale(1);
+      }
+    }
+
+    /* Hide custom cursor on mobile/tablet */
+    @media (hover: none) and (pointer: coarse),
+    (max-width: 1023px) {
+
+      body,
+      html,
+      a,
+      button,
+      [role="button"],
+      input,
+      select,
+      label,
+      [onclick] {
+        cursor: auto !important;
+      }
+
+      #custom-cursor,
+      #blob,
+      .pencil-trail {
+        display: none !important;
+      }
+    }
+
+    .click-particle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      font-weight: bold;
+      animation: particle-burst 0.8s ease-out forwards;
+      will-change: transform, opacity;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes particle-burst {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.5);
+      }
+    }
+
+    @keyframes continuous-shine {
+      0% {
+        left: -100%;
+      }
+
+      25% {
+        left: 150%;
+      }
+
+      100% {
+        left: 150%;
+      }
+    }
+
+    /* Shine effect for buttons */
+    .btn-shine {
+      position: relative;
+      overflow: hidden;
+      /* This masks the shine to the button's shape */
+    }
+
+    .btn-shine::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      /* Animation starts from here */
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.4) 50%,
+          rgba(255, 255, 255, 0) 100%);
+      transform: skewX(-25deg);
+      animation: continuous-shine 4s ease-in-out infinite;
+    }
+
+    /* New Pencil Drawing Effect */
+    .pencil-trail {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9997;
+      /* Below cursor, above blob */
+      height: 2px;
+      /* Line thickness */
+      background-color: #020617;
+      /* Black for light theme */
+      border-radius: 1px;
+      transform-origin: left center;
+      /* Rotates the line from its starting point */
+      animation: fade-out-trail 1.5s ease-out forwards;
+      will-change: opacity;
+    }
+
+    html.dark .pencil-trail {
+      background-color: #f8fafc;
+      /* White for dark theme */
+    }
+
+    @keyframes fade-out-trail {
+      from {
+        opacity: 0.8;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+
+
+    /* Foundational Years Gamification Styles */
+    @keyframes float {
+      0% {
+        transform: translateY(0px) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-20px) rotate(10deg);
+      }
+
+      100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      10%,
+      30%,
+      50%,
+      70%,
+      90% {
+        transform: translateX(-5px);
+      }
+
+      20%,
+      40%,
+      60%,
+      80% {
+        transform: translateX(5px);
+      }
+    }
+
+    .shake-animation {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes correct-burst {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+      }
+
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 20px rgba(251, 191, 36, 0);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+      }
+    }
+
+    .correct-burst-animation {
+      animation: correct-burst 0.6s ease-out;
+    }
+
+    .parallax-bg {
+      background-attachment: fixed;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      position: relative;
+    }
+
+    /* Confetti animation */
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .confetti-particle {
+      position: absolute;
+      top: -20px;
+      /* Start from above the container */
+      border-radius: 4px;
+      animation-name: confetti-fall;
+      animation-timing-function: linear;
+      animation-duration: 3s;
+      animation-fill-mode: forwards;
+      will-change: transform, opacity;
+    }
+  </style>
+  <script>
+    // Prevents "Flash of Unstyled Content" (FOUC)
+    (function () {
+      try {
+        // Default to light theme. Add 'dark' class only if it's set in localStorage.
+        if (localStorage.getItem('theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        console.error('Could not apply theme from localStorage', e);
+      }
+    })();
+  </script>
+
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
