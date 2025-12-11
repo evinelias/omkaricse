@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, X, Send, Bot } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
+import api from '../../api';
 
 interface Suggestion {
     label: string;
@@ -99,20 +100,10 @@ const Chatbot: React.FC = () => {
         setError(null);
 
         try {
-            const response = await fetch('http://localhost:5000/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: trimmedInput }),
-            });
+            const response = await api.post('/chat', { message: trimmedInput });
+            const data = response.data;
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to get response');
-            }
 
-            const data = await response.json();
             const rawText = data.text;
             const suggestions: Suggestion[] = [];
 
