@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle } from 'lucide-react';
 import { usePopup } from '../../contexts/PopupContext';
 import CustomSelect from './CustomSelect';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 import api from '../../api';
 
 const AdmissionPopup: React.FC = () => {
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const { isPopupOpen, openPopup, closePopup } = usePopup();
     const [isClosing, setIsClosing] = useState(false);
     const [gradeLevel, setGradeLevel] = useState('');
@@ -57,6 +59,15 @@ const AdmissionPopup: React.FC = () => {
         setIsSubmitting(true);
         setSubmitStatus(null);
         try {
+            if (!executeRecaptcha) {
+                console.warn('Execute recaptcha not yet available');
+                setSubmitStatus({ success: false, message: 'Captcha not ready.' });
+                setIsSubmitting(false); // Ensure submitting state is reset
+                return;
+            }
+
+            const token = await executeRecaptcha('admission_popup');
+
             await api.post('/leads', {
                 name: formData.parentName,
                 studentName: formData.studentName,
@@ -66,7 +77,8 @@ const AdmissionPopup: React.FC = () => {
                 inquiryType: 'Admissions Inquiry',
                 grade: gradeLevel,
                 message: `Inquiry from Popup`,
-                status: 'NEW'
+                status: 'NEW',
+                token // Add token
             });
 
             setSubmitStatus({ success: true, message: 'Inquiry submitted successfully!' });
@@ -109,11 +121,11 @@ const AdmissionPopup: React.FC = () => {
     ];
 
     return (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`fixed inset - 0 z - [100] flex items - center justify - center p - 4 transition - opacity duration - 300 ${isClosing ? 'opacity-0' : 'opacity-100'} `}>
             {/* Opaque dark overlay without backdrop-blur for a solid "stand out" look */}
             <div className="fixed inset-0 bg-black/90" onClick={handleClose}></div>
 
-            <div className={`relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row transition-transform duration-300 transform ${isClosing ? 'scale-95' : 'scale-100'}`}>
+            <div className={`relative bg - white dark: bg - slate - 900 border border - slate - 200 dark: border - slate - 700 rounded - 2xl shadow - 2xl w - full max - w - 4xl max - h - [90vh] overflow - hidden flex flex - col md: flex - row transition - transform duration - 300 transform ${isClosing ? 'scale-95' : 'scale-100'} `}>
                 <button
                     onClick={handleClose}
                     className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/10 text-slate-800 dark:text-white hover:bg-black/20 transition-colors"
@@ -182,7 +194,7 @@ const AdmissionPopup: React.FC = () => {
                             </button>
 
                             {submitStatus && (
-                                <div className={`p-3 rounded-lg flex items-center justify-center space-x-2 animate-fade-in-up ${submitStatus.success ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>
+                                <div className={`p - 3 rounded - lg flex items - center justify - center space - x - 2 animate - fade -in -up ${submitStatus.success ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'} `}>
                                     {submitStatus.success ? (
                                         <CheckCircle className="w-5 h-5" />
                                     ) : (

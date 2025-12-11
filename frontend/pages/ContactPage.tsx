@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import PageHeader from '../components/ui/PageHeader';
 import { MapPin, Phone, Mail, X, CheckCircle } from 'lucide-react';
 import PageSEO from '../components/ui/PageSEO';
@@ -20,6 +21,7 @@ const ContactCard: React.FC<{ icon: React.ComponentType<{ className?: string; st
 
 
 const ContactPage: React.FC = () => {
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [inquiryType, setInquiryType] = useState('');
     const [gradeLevel, setGradeLevel] = useState('');
     const [referralSource, setReferralSource] = useState('');

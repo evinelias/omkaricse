@@ -177,7 +177,7 @@ const Chatbot: React.FC = () => {
 
     return (
         <div className="relative">
-            <div className={`flex flex-col bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'} fixed inset-0 sm:absolute sm:inset-auto sm:bottom-0 sm:right-0 sm:w-96 sm:h-[32rem] sm:rounded-2xl sm:shadow-2xl sm:origin-bottom-right`}>
+            <div className={`flex flex-col bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'} fixed inset-0 sm:absolute sm:inset-auto sm:bottom-0 sm:right-0 sm:w-96 sm:h-[32rem] sm:rounded-2xl sm:shadow-2xl sm:origin-bottom-right z-[2147483647]`}>
                 <div className={`flex items-center justify-between p-4 border-b ${isLight ? 'border-white/30' : 'border-slate-700/50'}`}>
                     <div className="flex items-center space-x-3">
                         <Bot className={`w-7 h-7 ${isLight ? 'text-blue-600' : 'text-blue-400'}`} />
@@ -252,7 +252,7 @@ const Chatbot: React.FC = () => {
                 </form>
             </div>
 
-            <div className={`absolute bottom-0 right-0 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
+            <div className={`absolute bottom-0 right-0 transition-all duration-300 ease-in-out ${isOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'} z-[2147483647]`}>
                 <div
                     onClick={handleBubbleClick}
                     onKeyDown={(e) => {

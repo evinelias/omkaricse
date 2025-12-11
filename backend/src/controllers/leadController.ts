@@ -2,15 +2,42 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import ExcelJS from 'exceljs';
 import { sendLeadNotification } from '../utils/emailService';
+import axios from 'axios'; // Added axios import
 
 const prisma = new PrismaClient();
 
 // Create a new lead (Public)
+// Google reCAPTCHA Secret Key
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+
 export const createLead = async (req: Request, res: Response) => {
     try {
-        const { name, email, phone, source, message, grade, city, studentName, inquiryType } = req.body;
+        const { name, email, phone, source, message, grade, city, studentName, inquiryType, token } = req.body; // Added token
 
-        const lead = await prisma.lead.create({
+        // Verify reCAPTCHA Token if provided
+        if (token && RECAPTCHA_SECRET_KEY) {
+            try {
+                const recaptchaResponse = await axios.post(
+                    `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`
+                );
+
+                const { success, score } = recaptchaResponse.data;
+
+                if (!success || (score !== undefined && score < 0.5)) {
+                    console.warn(`reCAPTCHA failed for ${email}: score ${score}`);
+                    return res.status(400).json({ error: 'reCAPTCHA verification failed. Please try again.' });
+                }
+            } catch (captchaError) {
+                console.error('reCAPTCHA Verification Error:', captchaError);
+                // Continue cautiously or fail? For now, we log and continue to avoid blocking legitimate users on API errors.
+                // return res.status(500).json({ error: 'Captcha service unavailable' });
+            }
+        } else if (RECAPTCHA_SECRET_KEY && !token && source !== 'admin_test') { // Allow admin tests to bypass
+            // Optional: Enforce token presence in production
+            // return res.status(400).json({ error: 'reCAPTCHA token missing' });
+        }
+
+        const newLead = await prisma.lead.create({ // Changed 'lead' to 'newLead'
             data: {
                 name,
                 email,
@@ -25,10 +52,12 @@ export const createLead = async (req: Request, res: Response) => {
             },
         });
 
-        // Trigger email notification (non-blocking)
-        sendLeadNotification(lead).catch(err => console.error("Email processing error:", err));
+        // Send email notification (async)
+        // const newLead = await prisma.lead.create(...) was correct
+        // but usages below were using 'lead'
+        sendLeadNotification(newLead).catch(console.error);
 
-        res.status(201).json(lead);
+        res.status(201).json(newLead);
     } catch (error) {
         console.error('Error creating lead:', error);
         res.status(500).json({ message: 'Failed to create lead' });
