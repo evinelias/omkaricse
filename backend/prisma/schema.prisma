@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+}
+
+model Lead {
+  id          Int      @id @default(autoincrement())
+  name        String   // Parent/Guardian Name
+  studentName String?  // Student Name
+  email       String
+  phone       String
+  source      String   // "popup", "contact", "social_media", etc.
+  inquiryType String?  // "Admissions Inquiry", "General", etc.
+  message     String?
+  grade       String?
+  city        String?
+  status      String   @default("NEW") // "NEW", "CONTACTED", "QUALIFIED", "UNQUALIFIED"
+  createdAt   DateTime @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model EmailConfig {
+  id              Int    @id @default(autoincrement())
+  receiverEmail   String @default("admin@omkaricse.in")
+  mailjetApiKey   String?
+  mailjetSecret   String?
+  isEnabled       Boolean @default(true)
+}
+
+model EmailLog {
+  id        Int      @id @default(autoincrement())
+  recipient String
+  subject   String
+  status    String   // "SUCCESS" | "FAILED"
+  error     String?
+  sentAt    DateTime @default(now())
+}

@@ -89,6 +89,18 @@ const Footer: React.FC = () => {
                 <a href="mailto:omkarschool@gmail.com" className={linkColor}>omkarschool@gmail.com</a>
               </p>
             </address>
+
+            <div className="mt-6">
+              <Link
+                to="/admin/login"
+                className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${isLight
+                  ? 'border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-amber-600'
+                  : 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-amber-400'
+                  }`}
+              >
+                Admin Login
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -99,9 +111,10 @@ const Footer: React.FC = () => {
           <p className={`${copyrightColor} text-sm text-center`}>
             Made with ❤️ <a href="https://www.linkedin.com/in/evin-chacko-chirathalackal-86b83868/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">Evin Chacko Chirathalackal</a>
           </p>
+
         </div>
       </div>
-    </footer>
+    </footer >
   );
 };
 

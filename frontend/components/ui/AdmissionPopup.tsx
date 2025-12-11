@@ -3,10 +3,19 @@ import { X, Send } from 'lucide-react';
 import { usePopup } from '../../contexts/PopupContext';
 import CustomSelect from './CustomSelect';
 
+import api from '../../api';
+
 const AdmissionPopup: React.FC = () => {
     const { isPopupOpen, openPopup, closePopup } = usePopup();
     const [isClosing, setIsClosing] = useState(false);
     const [gradeLevel, setGradeLevel] = useState('');
+    const [formData, setFormData] = useState({
+        parentName: '',
+        mobile: '',
+        studentName: '',
+        email: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const hasBeenShown = sessionStorage.getItem('admissionPopupShown');
@@ -25,6 +34,47 @@ const AdmissionPopup: React.FC = () => {
             closePopup();
             setIsClosing(false);
         }, 300); // Match animation duration
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        // Map IDs to state keys
+        let stateKey = '';
+        if (id === 'popup-parent-name') stateKey = 'parentName';
+        else if (id === 'popup-mobile') stateKey = 'mobile';
+        else if (id === 'popup-student-name') stateKey = 'studentName';
+        else if (id === 'popup-email') stateKey = 'email';
+
+        if (stateKey) {
+            setFormData(prev => ({ ...prev, [stateKey]: value }));
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            await api.post('/leads', {
+                name: formData.parentName,
+                studentName: formData.studentName,
+                phone: formData.mobile,
+                email: formData.email,
+                source: 'popup',
+                inquiryType: 'Admissions Inquiry',
+                grade: gradeLevel,
+                message: `Inquiry from Popup`,
+                status: 'NEW'
+            });
+            alert('Inquiry submitted successfully!');
+            handleClose();
+            setFormData({ parentName: '', mobile: '', studentName: '', email: '' });
+            setGradeLevel('');
+        } catch (error) {
+            console.error(error);
+            alert('Failed to submit. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (!isPopupOpen) {
@@ -47,6 +97,8 @@ const AdmissionPopup: React.FC = () => {
         "Grade VII",
         "Grade VIII",
         "Grade IX",
+        "Grade XI",
+        "Grade XII",
     ];
 
     return (
@@ -77,16 +129,18 @@ const AdmissionPopup: React.FC = () => {
                 <div className="w-full md:w-1/2 p-8 lg:p-12 overflow-y-auto bg-white dark:bg-slate-900">
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Admissions Open!</h2>
                     <p className="text-slate-600 dark:text-slate-300 mb-6">Secure your child's future at Omkar International School. Fill out the form below to start the admission process.</p>
-                    <form className="space-y-5">
+                    <form className="space-y-5" onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="popup-parent-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Parent/Guardian Name</label>
-                            <input type="text" id="popup-parent-name" className={inputClasses} required />
+                            <input type="text" id="popup-parent-name" value={formData.parentName} onChange={handleInputChange} className={inputClasses} required />
                         </div>
                         <div>
                             <label htmlFor="popup-mobile" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mobile Number</label>
                             <input
                                 type="tel"
                                 id="popup-mobile"
+                                value={formData.mobile}
+                                onChange={handleInputChange}
                                 className={inputClasses}
                                 required
                                 pattern="[0-9]{10}"
@@ -95,8 +149,12 @@ const AdmissionPopup: React.FC = () => {
                             />
                         </div>
                         <div>
+                            <label htmlFor="popup-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                            <input type="email" id="popup-email" value={formData.email} onChange={handleInputChange} className={inputClasses} required />
+                        </div>
+                        <div>
                             <label htmlFor="popup-student-name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student Name</label>
-                            <input type="text" id="popup-student-name" className={inputClasses} required />
+                            <input type="text" id="popup-student-name" value={formData.studentName} onChange={handleInputChange} className={inputClasses} required />
                         </div>
                         <div>
                             <label htmlFor="popup-grade-level" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Grade Level of Interest</label>
@@ -110,9 +168,9 @@ const AdmissionPopup: React.FC = () => {
                                 direction="up"
                             />
                         </div>
-                        <button type="submit" className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105">
+                        <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50">
                             <Send className="w-5 h-5 mr-2" />
-                            Submit Inquiry
+                            {isSubmitting ? 'Submitting...' : 'Submit Inquiry'}
                         </button>
                     </form>
                 </div>

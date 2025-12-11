@@ -1,2 +1,184 @@
 @import "tailwindcss";
 @config "./tailwind.config.cjs";
+
+@layer utilities {
+    .animate-subtle-pulse {
+        animation: subtle-pulse 3s infinite;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+}
+
+@keyframes subtle-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--pulse-color), 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(var(--pulse-color), 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--pulse-color), 0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide default cursor */
+body,
+html {
+    cursor: none;
+}
+
+/* Force hide cursor on interactive elements to prevent flickering */
+a,
+button,
+[role="button"],
+input,
+select,
+label,
+[onclick] {
+    cursor: none !important;
+}
+
+/* Custom Cursor Container */
+#custom-cursor {
+    position: fixed;
+    width: 48px;
+    height: 48px;
+    /* Pencil SVG encoded as Data URI */
+    background-image: url('data:image/svg+xml;utf8,<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-45 16 16)"><rect x="13" y="28" width="6" height="4" rx="1" fill="%23F4A7B9"/><rect x="13" y="25" width="6" height="3" fill="%23BDBDBD"/><rect x="13" y="7" width="6" height="18" fill="%23FFD54F"/><path d="M13 7 L19 7 L16 1 Z" fill="%23F5DEB3"/><path d="M15 4 L17 4 L16 1 Z" fill="%23424242"/></g></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    /* Allows clicks to pass through */
+    z-index: 9999;
+    transition: transform 0.2s ease-out;
+    will-change: transform;
+    animation: cursor-wobble 1.5s ease-in-out infinite;
+    transform-origin: 8px 8px;
+    /* Align transform origin to pencil tip */
+}
+
+/* Hover State - Stops wobble and scales up */
+#custom-cursor.hover {
+    animation: none;
+    transform: rotate(0deg) scale(1.3);
+}
+
+/* Idle Animation */
+@keyframes cursor-wobble {
+
+    0%,
+    100% {
+        transform: rotate(5deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(-5deg) scale(1);
+    }
+}
+
+/* Disable on Touch Devices */
+@media (hover: none) and (pointer: coarse),
+(max-width: 1023px) {
+
+    body,
+    html,
+    a,
+    button,
+    [role="button"],
+    input,
+    select,
+    label,
+    [onclick] {
+        cursor: auto !important;
+    }
+
+    #custom-cursor {
+        display: none !important;
+    }
+}
+
+#blob {
+    height: 500px;
+    aspect-ratio: 1;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: linear-gradient(to right, aquamarine, mediumpurple);
+    animation: rotate 20s infinite;
+    filter: blur(200px);
+    opacity: 0.4;
+    z-index: -1;
+    pointer-events: none;
+}
+
+@keyframes rotate {
+    from {
+        rotate: 0deg;
+    }
+
+    50% {
+        scale: 1 1.5;
+    }
+
+    to {
+        rotate: 360deg;
+    }
+}
+
+.click-particle {
+    position: fixed;
+    pointer-events: none;
+    animation: particle-burst 0.8s ease-out forwards;
+    z-index: 9998;
+    font-weight: bold;
+    user-select: none;
+}
+
+@keyframes particle-burst {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+.pencil-trail {
+    position: fixed;
+    height: 4px;
+    background: linear-gradient(90deg, #f59e0b, #ed8936, #f94144);
+    border-radius: 99px;
+    pointer-events: none;
+    z-index: 9997;
+    transform-origin: left center;
+    opacity: 0.8;
+    animation: fadeOut 1.5s forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        width: 0;
+    }
+}

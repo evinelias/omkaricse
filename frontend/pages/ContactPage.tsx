@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import PageHeader from '../components/ui/PageHeader';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, X, CheckCircle } from 'lucide-react';
 import PageSEO from '../components/ui/PageSEO';
 import CustomSelect from '../components/ui/CustomSelect';
+import api from '../api';
 
 // FIX: Update icon prop type to allow passing strokeWidth to lucide icons.
-const ContactCard: React.FC<{ icon: React.ComponentType<{className?: string; strokeWidth?: number}>; title: string; children: React.ReactNode }> = ({ icon: Icon, title, children }) => (
+const ContactCard: React.FC<{ icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; title: string; children: React.ReactNode }> = ({ icon: Icon, title, children }) => (
     <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg border border-white/20 dark:border-slate-700/50 p-8 rounded-2xl shadow-lg text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border-t-4 border-amber-400 h-full">
         <div className="flex justify-center items-center mb-5">
             <div className="bg-amber-100 dark:bg-slate-700 p-4 rounded-full">
@@ -22,8 +23,20 @@ const ContactPage: React.FC = () => {
     const [inquiryType, setInquiryType] = useState('');
     const [gradeLevel, setGradeLevel] = useState('');
     const [referralSource, setReferralSource] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        message: '',
+        studentName: '' // Added studentName to formData
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Explicitly define type for error state
+    const [submitStatus, setSubmitStatus] = useState<{ success: boolean; message: string } | null>(null);
+
     const showAdmissionsFields = inquiryType === 'Admissions Inquiry';
-    
+
     const inquiryOptions = [
         "Admissions Inquiry",
         "General Inquiry",
@@ -44,6 +57,8 @@ const ContactPage: React.FC = () => {
         "Grade VII",
         "Grade VIII",
         "Grade IX",
+        "Grade XI",
+        "Grade XII",
     ];
 
     const referralOptions = [
@@ -54,23 +69,60 @@ const ContactPage: React.FC = () => {
     ];
 
     const inputClasses = "block w-full px-4 py-3 bg-slate-100/50 dark:bg-slate-700/50 backdrop-blur-sm border border-slate-300/50 dark:border-slate-600/50 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-white dark:placeholder-slate-400 transition";
-    
-    const nameLabel = (inquiryType === 'General Inquiry' || inquiryType === 'Feedback' || inquiryType === 'Careers') 
-        ? 'Your Name' 
+
+    const nameLabel = (inquiryType === 'General Inquiry' || inquiryType === 'Feedback' || inquiryType === 'Careers')
+        ? 'Your Name'
         : 'Parent/Guardian Name';
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setSubmitStatus(null);
+
+        try {
+            await api.post('/leads', {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                message: formData.message,
+                studentName: formData.studentName,
+                inquiryType: inquiryType,
+                source: referralSource ? referralSource.toLowerCase().replace(/ /g, '_') : 'contact_page',
+                grade: showAdmissionsFields ? gradeLevel : undefined,
+                // Combine other fields into message or dedicated fields if backend supports
+                city: '', // Contact page doesn't ask for city explicitly
+            });
+            setSubmitStatus({ success: true, message: 'Message sent successfully!' });
+            // Reset form
+            setFormData({ name: '', email: '', phone: '', message: '', studentName: '' });
+            setInquiryType('');
+            setGradeLevel('');
+            setReferralSource('');
+        } catch (error) {
+            console.error(error);
+            setSubmitStatus({ success: false, message: 'Failed to send message. Please try again.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <div>
-            <PageSEO 
-              title="Contact Us - Omkar International School | Best School in Dombivli"
-              description="Get in touch with Omkar International School. Find our address, phone numbers, email, and location map. Contact the best school in Dombivli today."
+            <PageSEO
+                title="Contact Us - Omkar International School | Best School in Dombivli"
+                description="Get in touch with Omkar International School. Find our address, phone numbers, email, and location map. Contact the best school in Dombivli today."
             />
             <PageHeader
                 title="Contact Us"
                 subtitle="We'd love to hear from you. Keep in touch!"
             />
             <div className="container mx-auto px-6 py-20 lg:py-28">
-                 {/* Contact Info Cards */}
+                {/* Contact Info Cards */}
                 <div className="text-center mb-20">
                     <h2 className="text-3xl lg:text-4xl font-bold text-slate-800 dark:text-white">Get in Touch</h2>
                     <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">We are here to help and answer any question you might have.</p>
@@ -94,7 +146,12 @@ const ContactPage: React.FC = () => {
                     {/* Message Form */}
                     <div className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-lg border border-white/20 dark:border-slate-700/50 p-8 lg:p-12 rounded-xl shadow-xl">
                         <h2 className="text-3xl lg:text-4xl font-bold text-slate-800 dark:text-white mb-6">Leave a Message</h2>
-                        <form className="space-y-6">
+                        {submitStatus && !submitStatus.success && (
+                            <div className="mb-4 p-4 rounded bg-red-100 text-red-700">
+                                {submitStatus.message}
+                            </div>
+                        )}
+                        <form className="space-y-6" onSubmit={handleSubmit}>
                             <div>
                                 <label htmlFor="inquiryType" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Inquiry Type</label>
                                 <CustomSelect
@@ -108,25 +165,27 @@ const ContactPage: React.FC = () => {
                             </div>
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{nameLabel}</label>
-                                <input type="text" id="name" className={inputClasses} required />
+                                <input type="text" id="name" value={formData.name} onChange={handleInputChange} className={inputClasses} required />
                             </div>
-                             <div>
-                                <label htmlFor="mobile" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mobile Number</label>
-                                <input 
-                                    type="tel" 
-                                    id="mobile" 
-                                    className={inputClasses} 
-                                    required 
-                                    pattern="[0-9]{10}" 
+                            <div>
+                                <label htmlFor="phone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mobile Number</label>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    className={inputClasses}
+                                    required
+                                    pattern="[0-9]{10}"
                                     title="Please enter a valid 10-digit mobile number."
                                     maxLength={10}
                                 />
                             </div>
-                            
+
                             <div className={`space-y-6 transition-all duration-500 ease-in-out ${showAdmissionsFields ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                                 <div>
                                     <label htmlFor="studentName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Student Name</label>
-                                    <input type="text" id="studentName" className={inputClasses} required={showAdmissionsFields} />
+                                    <input type="text" id="studentName" value={formData.studentName} onChange={handleInputChange} className={inputClasses} required={showAdmissionsFields} />
                                 </div>
                                 <div>
                                     <label htmlFor="gradeLevel" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Grade Level of Interest</label>
@@ -143,6 +202,11 @@ const ContactPage: React.FC = () => {
                             </div>
 
                             <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email (Optional)</label>
+                                <input type="email" id="email" value={formData.email} onChange={handleInputChange} className={inputClasses} />
+                            </div>
+
+                            <div>
                                 <label htmlFor="referralSource" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">From where did you hear us?</label>
                                 <CustomSelect
                                     id="referralSource"
@@ -154,21 +218,21 @@ const ContactPage: React.FC = () => {
                                 />
                             </div>
 
-                             <div>
+                            <div>
                                 <label htmlFor="message" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Message</label>
-                                <textarea id="message" rows={5} className={inputClasses} required></textarea>
+                                <textarea id="message" value={formData.message} onChange={handleInputChange} rows={5} className={inputClasses} required></textarea>
                             </div>
                             <div>
-                                <button type="submit" className="w-full bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105">
-                                    Send Message
+                                <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 text-white py-3 px-4 border border-transparent rounded-full shadow-sm text-base font-bold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50">
+                                    {isSubmitting ? 'Sending...' : 'Send Message'}
                                 </button>
                             </div>
                         </form>
                     </div>
-                    
+
                     {/* Google Map */}
                     <div className="rounded-xl shadow-xl overflow-hidden min-h-[400px] lg:min-h-full">
-                         <iframe
+                        <iframe
                             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7535.402211352506!2d73.09652919214106!3d19.208252928094783!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7950510c25fcd%3A0xbc4826b136461f62!2sOmkar%20International%20School%20CISCE!5e0!3m2!1sen!2sin!4v1759274675437!5m2!1sen!2sin"
                             width="100%"
                             height="100%"
@@ -181,6 +245,33 @@ const ContactPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Success Modal */}
+            {submitStatus?.success && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-slate-200 dark:border-slate-700 relative transform transition-all scale-100">
+                        <button
+                            onClick={() => setSubmitStatus(null)}
+                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                        </button>
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Message Sent!</h3>
+                        <p className="text-slate-600 dark:text-slate-300 mb-6">
+                            Thank you for contacting us. We have received your message and will get back to you shortly.
+                        </p>
+                        <button
+                            onClick={() => setSubmitStatus(null)}
+                            className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

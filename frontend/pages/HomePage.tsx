@@ -203,7 +203,7 @@ const HomePage: React.FC = () => {
       <section
         className="py-20 lg:py-28 parallax-bg"
         style={{
-          backgroundImage: "url('/images/home-parallax.jpg')"
+          backgroundImage: "url('/images/home-bg-1.jpg')"
         }}
       >
         <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-slate-900/60' : 'bg-white/50'}`}></div>
@@ -285,7 +285,7 @@ const HomePage: React.FC = () => {
       {/* Final CTA */}
       <section
         className="py-20 lg:py-28 relative bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/home-cta.jpg')" }}
+        style={{ backgroundImage: "url('/images/home-bg-2.jpg')" }}
       >
         <div className="absolute inset-0 bg-slate-900/50"></div>
         <div className="container mx-auto px-6 relative z-10">
