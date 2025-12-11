@@ -43,7 +43,7 @@ const AdminLoginPage: React.FC = () => {
             <div className="relative z-10 w-full max-w-md p-4">
                 <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl border border-white/50 dark:border-slate-700 shadow-2xl rounded-3xl p-8 sm:p-10 transition-all duration-300 hover:shadow-amber-500/10 dark:hover:shadow-amber-900/10">
                     <div className="text-center mb-8">
-                        <div className="mx-auto h-16 w-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 mb-6 transition-transform hover:rotate-6">
+                        <div className="mx-auto h-16 w-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg mb-6">
                             <Lock className="h-8 w-8 text-white" />
                         </div>
                         <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
@@ -69,7 +69,7 @@ const AdminLoginPage: React.FC = () => {
                                         type="email"
                                         required
                                         className="block w-full pl-10 pr-3 py-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 transition-all duration-200"
-                                        placeholder="admin@omkaricse.in"
+                                        placeholder="Enter your email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
