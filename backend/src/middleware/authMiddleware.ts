@@ -13,7 +13,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
     if (!process.env.JWT_SECRET) {
         console.error("JWT_SECRET is not defined");
-        return res.sendStatus(500);
+        return res.status(500).json({ error: 'Server Misconfiguration: JWT_SECRET is missing' });
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err: any, user: any) => {

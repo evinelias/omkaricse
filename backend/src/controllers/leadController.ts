@@ -61,7 +61,7 @@ export const getLeads = async (req: Request, res: Response) => {
         res.json(leads);
     } catch (error) {
         console.error('Error fetching leads:', error);
-        res.status(500).json({ message: 'Failed to fetch leads' });
+        res.status(500).json({ message: 'Failed to fetch leads', error: error instanceof Error ? error.message : String(error) });
     }
 };
 
