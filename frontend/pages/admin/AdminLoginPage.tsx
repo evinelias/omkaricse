@@ -47,6 +47,14 @@ const AdminLoginPage: React.FC = () => {
                         return res.data;
                     },
                     staleTime: 1000 * 60,
+                }),
+                queryClient.prefetchQuery({
+                    queryKey: ['emailStats'],
+                    queryFn: async () => {
+                        const res = await api.get('/settings/email-stats');
+                        return res.data;
+                    },
+                    staleTime: 1000 * 60,
                 })
             ]);
 

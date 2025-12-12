@@ -82,7 +82,6 @@ const AdminDashboard: React.FC = () => {
       const response = await api.get('/settings/email-stats');
       return response.data;
     },
-    enabled: activeTab === 'settings', // Only fetch when tab is active
   });
 
   const emailStats = emailData?.stats || null;
