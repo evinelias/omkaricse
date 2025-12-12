@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../../api';
 import { useNavigate } from 'react-router-dom';
 import PageSEO from '../../components/ui/PageSEO';
@@ -67,6 +68,54 @@ const AdminDashboard: React.FC = () => {
     // Auto-refresh every 5s for real-time feel
     refetchInterval: 5000,
   });
+
+  // Notification Logic
+  const [hasPermission, setHasPermission] = useState(Notification.permission === 'granted');
+  const previousLeadCountRef = React.useRef(leads.length);
+
+  useEffect(() => {
+    // If it's the first load (0 -> N), don't notify. 
+    // Just sync the ref if it's wildly different, or initialize it.
+    if (previousLeadCountRef.current === 0 && leads.length > 0) {
+      previousLeadCountRef.current = leads.length;
+      return;
+    }
+
+    if (leads.length > previousLeadCountRef.current) {
+      const newCount = leads.length - previousLeadCountRef.current;
+      // Trigger Notification
+      if (Notification.permission === 'granted') {
+        try {
+          // Find the newest lead
+          const newestLead = leads.reduce((prev: Lead, current: Lead) =>
+            (new Date(prev.createdAt) > new Date(current.createdAt)) ? prev : current
+            , leads[0]); // Default to first if needed, logic holds for non-empty
+
+          new Notification(`New Lead Received!`, {
+            body: `${newestLead?.name} - ${newestLead?.grade || 'General Inquiry'}`,
+            icon: '/favicon.ico', // Use favicon or custom icon
+            tag: 'new-lead' // Prevents notification spam stacking
+          });
+          // Also play a subtle sound if desired, for now just notification
+        } catch (e) {
+          console.error("Notification failed", e);
+        }
+      }
+      previousLeadCountRef.current = leads.length;
+    } else if (leads.length < previousLeadCountRef.current) {
+      // Handle deletion case (don't notify, just sync)
+      previousLeadCountRef.current = leads.length;
+    }
+  }, [leads]);
+
+  const requestNotificationPermission = async () => {
+    const permission = await Notification.requestPermission();
+    setHasPermission(permission === 'granted');
+    if (permission === 'granted') {
+      toast.success("Notifications enabled!");
+      new Notification("OIS Admin", { body: "You will now be notified of new leads." });
+    }
+  };
 
   const { data: settings = { receiverEmail: '', isEnabled: true } } = useQuery({
     queryKey: ['settings'],
@@ -267,8 +316,18 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
         </div>
       </nav>
 
+      {/* Notification prompt banner if needed, or just a small icon */}
+      {!hasPermission && Notification.permission !== 'denied' && (
+        <div className="bg-amber-100 dark:bg-amber-900/30 px-4 py-2 text-center text-sm text-amber-800 dark:text-amber-200">
+          <span className="mr-2">Enable desktop notifications to get instant lead alerts.</span>
+          <button onClick={requestNotificationPermission} className="underline font-bold hover:text-amber-900 dark:hover:text-amber-100">
+            Enable Now
+          </button>
+        </div>
+      )}
+
       {/* Reduced py-6 to py-2 here */}
-      <div className="max-w-7xl mx-auto pt-0 pb-6 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto pt-0 pb-6 px-4 sm:px-6 lg:px-8">
 
         {/* Tabs */}
         <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700">
@@ -370,7 +429,72 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                    {/* Mobile Card View */}
+                    <div className="md:hidden grid grid-cols-1 gap-4 mb-4">
+                      {filteredLeads.map((lead) => {
+                        let cardClass = "bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border-l-4 transition-all";
+                        let statusColor = "";
+                        switch (lead.status) {
+                          case 'CONTACTED':
+                            cardClass += " border-amber-400 bg-amber-50/50 dark:bg-amber-900/10";
+                            statusColor = "text-amber-600 dark:text-amber-400";
+                            break;
+                          case 'QUALIFIED':
+                            cardClass += " border-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10";
+                            statusColor = "text-emerald-600 dark:text-emerald-400";
+                            break;
+                          case 'UNQUALIFIED':
+                            cardClass += " border-red-400 bg-red-50/50 dark:bg-red-900/10";
+                            statusColor = "text-red-600 dark:text-red-400";
+                            break;
+                          case 'NEW':
+                          default:
+                            cardClass += " border-sky-500 bg-sky-50/50 dark:bg-sky-900/10";
+                            statusColor = "text-sky-600 dark:text-sky-400";
+                            break;
+                        }
+
+                        return (
+                          <div key={lead.id} className={cardClass}>
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-lg">{lead.studentName || 'No Student Name'}</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">{lead.name} (Parent)</p>
+                              </div>
+                              <div className={`text-xs font-bold px-2 py-1 rounded-full bg-white/50 dark:bg-black/20 ${statusColor}`}>
+                                {lead.status}
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 text-sm text-slate-600 dark:text-slate-300 mb-3">
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Grade:</span>
+                                <span>{lead.grade || 'N/A'}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Date:</span>
+                                <span>{new Date(lead.createdAt).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <span className="font-semibold w-16">Email:</span>
+                                <span className="break-all">{lead.email}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end pt-2 border-t border-slate-200 dark:border-slate-700/50">
+                              <button
+                                onClick={() => setSelectedLead(lead)}
+                                className="w-full text-center text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg font-medium transition-colors"
+                              >
+                                View Details
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 hidden md:table">
                       <thead className="bg-slate-50 dark:bg-slate-700/50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Student Name</th>
@@ -660,14 +784,29 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
           )}
 
           {/* Lead Details Modal */}
-          {selectedLead && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-700/50">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">Lead Details</h3>
-                  <div className="flex items-center space-x-3">
+          {selectedLead && createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex flex-col md:flex-row md:justify-between md:items-center bg-slate-50 dark:bg-slate-700/50 flex-shrink-0 gap-4">
+
+                  {/* Title & Mobile Close Row */}
+                  <div className="flex justify-between items-center w-full md:w-auto">
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate mr-2">Lead Details</h3>
+
+                    {/* Mobile Close Button (Top Right) */}
+                    <button
+                      onClick={() => setSelectedLead(null)}
+                      className="md:hidden p-3 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full transition-colors"
+                      title="Close"
+                    >
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+
+                  {/* Actions Row */}
+                  <div className="flex items-center justify-between md:justify-end space-x-2 w-full md:w-auto">
                     <select
-                      className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                      className="flex-grow md:flex-grow-0 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 outline-none"
                       value={selectedLead.status}
                       onChange={(e) => {
                         handleStatusChange(selectedLead.id, e.target.value);
@@ -679,28 +818,33 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                       <option value="QUALIFIED">Qualified</option>
                       <option value="UNQUALIFIED">Unqualified</option>
                     </select>
-                    <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-2"></div>
-                    <button
-                      onClick={() => handleCopy(selectedLead)}
-                      className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20 rounded-lg transition-colors group relative"
-                      title="Copy details"
-                    >
-                      <Copy className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(selectedLead.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group relative"
-                      title="Delete Lead"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setSelectedLead(null)}
-                      className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                      title="Close"
-                    >
-                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
+
+                    <div className="flex items-center gap-3 pl-2">
+                      <button
+                        onClick={() => handleCopy(selectedLead)}
+                        className="p-3 text-slate-500 hover:text-indigo-600 bg-white hover:bg-slate-100 dark:bg-slate-700 dark:text-slate-400 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm transition-all active:scale-95"
+                        title="Copy details"
+                      >
+                        <Copy className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(selectedLead.id)}
+                        className="p-3 text-red-600 bg-white hover:bg-red-50 dark:bg-slate-700 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm transition-all active:scale-95 ml-2"
+                        title="Delete Lead"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+
+                      {/* Desktop Close Button (Hidden on Mobile) */}
+                      <div className="hidden md:block h-8 w-px bg-slate-300 dark:bg-slate-600 mx-2"></div>
+                      <button
+                        onClick={() => setSelectedLead(null)}
+                        className="hidden md:block p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Close"
+                      >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6 overflow-y-auto max-h-[80vh]">
@@ -709,6 +853,7 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Full Name (Parent)</label>
                       <div className="text-base font-medium text-slate-900 dark:text-white">{selectedLead.name}</div>
                     </div>
+                    {/* ... (Rest of content is same, just need to close portal) */}
                     <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-xl border border-slate-100 dark:border-slate-700">
                       <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">Student Name</label>
                       <div className="text-base font-medium text-slate-900 dark:text-white">{selectedLead.studentName || 'Not Provided'}</div>
@@ -741,7 +886,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                   </div>
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
       </div>

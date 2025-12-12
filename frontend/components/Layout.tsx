@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
@@ -138,7 +139,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="isolate flex flex-col min-h-screen text-slate-800 dark:text-slate-200 transition-colors duration-300">
-      <div id="custom-cursor" ref={cursorRef}></div>
+      {createPortal(<div id="custom-cursor" ref={cursorRef}></div>, document.body)}
       <div id="blob" className="-z-10"></div>
 
       {!isAdminRoute && <Header />}

@@ -15,6 +15,15 @@ const AdminLoginPage: React.FC = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
+    React.useEffect(() => {
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+            // Optional: verify token validity with backend here if strictly needed,
+            // but for speed (as requested), we redirect immediately.
+            navigate('/admin/dashboard');
+        }
+    }, [navigate]);
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isLoading) return;

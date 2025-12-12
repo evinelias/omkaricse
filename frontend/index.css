@@ -65,7 +65,7 @@ label,
     background-repeat: no-repeat;
     pointer-events: none;
     /* Allows clicks to pass through */
-    z-index: 9999;
+    z-index: 100000;
     transition: transform 0.2s ease-out;
     will-change: transform;
     animation: cursor-wobble 1.5s ease-in-out infinite;
@@ -159,7 +159,7 @@ label,
     position: fixed;
     pointer-events: none;
     animation: particle-burst 0.8s ease-out forwards;
-    z-index: 9998;
+    z-index: 99999;
     font-weight: bold;
     user-select: none;
 }
@@ -182,7 +182,7 @@ label,
     background: linear-gradient(90deg, #f59e0b, #ed8936, #f94144);
     border-radius: 99px;
     pointer-events: none;
-    z-index: 9997;
+    z-index: 99998;
     transform-origin: left center;
     opacity: 0.8;
     animation: fadeOut 1.5s forwards;

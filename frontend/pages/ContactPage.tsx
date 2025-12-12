@@ -87,6 +87,19 @@ const ContactPage: React.FC = () => {
         setSubmitStatus(null);
 
         try {
+            if (!executeRecaptcha) {
+                // Should ideally wait or warn, but in dev we might bypass
+                if (!import.meta.env.DEV) {
+                    setSubmitStatus({ success: false, message: 'Captcha not ready. Please wait.' });
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
+            const token = import.meta.env.DEV
+                ? "NO_RECAPTCHA_DEV"
+                : (await executeRecaptcha('contact_page'));
+
             await api.post('/leads', {
                 name: formData.name,
                 email: formData.email,
@@ -96,6 +109,7 @@ const ContactPage: React.FC = () => {
                 inquiryType: inquiryType,
                 source: referralSource ? referralSource.toLowerCase().replace(/ /g, '_') : 'contact_page',
                 grade: showAdmissionsFields ? gradeLevel : undefined,
+                token,
                 // Combine other fields into message or dedicated fields if backend supports
                 city: '', // Contact page doesn't ask for city explicitly
             });

@@ -2,10 +2,10 @@ import React from 'react';
 import './index.css';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { PopupProvider } from './contexts/PopupContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -15,10 +15,17 @@ if (!rootElement) {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 1000 * 60 * 60 * 24, // 24 hours (Aggressive caching as requested)
+      gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days garbage collection
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
     },
   },
+});
+
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
 });
 
 const root = ReactDOM.createRoot(rootElement);
@@ -33,9 +40,12 @@ root.render(
         nonce: undefined,
       }}
     >
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister }}
+      >
         <App />
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </GoogleReCaptchaProvider>
   </React.StrictMode>
 );

@@ -59,14 +59,17 @@ const AdmissionPopup: React.FC = () => {
         setIsSubmitting(true);
         setSubmitStatus(null);
         try {
-            if (!executeRecaptcha) {
+            if (!executeRecaptcha && !import.meta.env.DEV) {
                 console.warn('Execute recaptcha not yet available');
                 setSubmitStatus({ success: false, message: 'Captcha not ready.' });
-                setIsSubmitting(false); // Ensure submitting state is reset
+                setIsSubmitting(false);
                 return;
             }
 
-            const token = await executeRecaptcha('admission_popup');
+            // Bypass in Development / Localhost
+            const token = import.meta.env.DEV
+                ? "NO_RECAPTCHA_DEV"
+                : await executeRecaptcha!('admission_popup'); // ! assertion safe due to check above
 
             await api.post('/leads', {
                 name: formData.parentName,

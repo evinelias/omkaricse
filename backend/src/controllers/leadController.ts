@@ -15,7 +15,12 @@ export const createLead = async (req: Request, res: Response) => {
         const { name, email, phone, source, message, grade, city, studentName, inquiryType, token } = req.body; // Added token
 
         // Verify reCAPTCHA Token if provided
-        if (token && RECAPTCHA_SECRET_KEY) {
+        if (token === 'NO_RECAPTCHA_DEV') {
+            if (process.env.NODE_ENV === 'production') {
+                return res.status(400).json({ error: 'Cannot bypass reCAPTCHA in production' });
+            }
+            console.log('Skipping reCAPTCHA verification in DEV mode');
+        } else if (token && RECAPTCHA_SECRET_KEY) {
             try {
                 const recaptchaResponse = await axios.post(
                     `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`
