@@ -4,6 +4,7 @@ import api from '../../api';
 import { useNavigate } from 'react-router-dom';
 import PageSEO from '../../components/ui/PageSEO';
 import { LogOut, Table, Settings, Download, Search, Trash2, Copy, Mail, CheckCircle, XCircle, BarChart2, Users, PlusCircle, Phone } from 'lucide-react';
+import ThemeSwitcher from '../../components/ui/ThemeSwitcher';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -46,7 +47,7 @@ interface EmailLog {
 
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'leads' | 'settings'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'email'>('leads');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -303,7 +304,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
             <div className="flex items-center">
               <span className="text-xl font-bold text-amber-600 dark:text-amber-500">OIS Admin</span>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
+              <ThemeSwitcher />
               <button
                 onClick={handleLogout}
                 className="flex items-center space-x-2 text-slate-600 dark:text-slate-300 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -327,10 +329,10 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
       )}
 
       {/* Reduced py-6 to py-2 here */}
-      <div className="max-w-7xl mx-auto pt-0 pb-6 px-1 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto pt-0 pb-6 px-0 sm:px-6 lg:px-8">
 
         {/* Tabs */}
-        <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-0">
           <button
             onClick={() => setActiveTab('leads')}
             className={`py-2 px-4 flex items-center space-x-2 border-b-2 font-medium transition-colors ${activeTab === 'leads'
@@ -342,14 +344,14 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
             <span>Leads</span>
           </button>
           <button
-            onClick={() => setActiveTab('settings')}
-            className={`py-2 px-4 flex items-center space-x-2 border-b-2 font-medium transition-colors ${activeTab === 'settings'
+            onClick={() => setActiveTab('email')}
+            className={`py-2 px-4 flex items-center space-x-2 border-b-2 font-medium transition-colors ${activeTab === 'email'
               ? 'border-amber-500 text-amber-600 dark:text-amber-500'
               : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
           >
-            <Settings className="w-5 h-5" />
-            <span>Settings</span>
+            <Mail className="w-5 h-5" />
+            <span>Email</span>
           </button>
         </div>
 
@@ -358,7 +360,7 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
           {activeTab === 'leads' ? (
             <>
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4 px-4 sm:px-0">
                 <div className="bg-blue-600 text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
                   <div className="relative z-10">
                     <p className="text-sm opacity-80">Total Leads</p>
@@ -614,8 +616,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
               {/* Email Stats Cards */}
               {emailStats && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium leading-6 text-slate-900 dark:text-white">Email Statistics</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <h3 className="text-lg font-medium leading-6 text-slate-900 dark:text-white px-4 sm:px-0">Email Statistics</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4 px-4 sm:px-0">
                     <div className="bg-blue-600 rounded-xl p-5 text-white shadow-lg relative overflow-hidden">
                       <div className="relative z-10">
                         <div className="text-sm opacity-80 mb-1">Total Emails</div>
@@ -663,35 +665,38 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                 </div>
               )}
 
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-slate-200 dark:border-slate-700">
-                <div className="flex justify-between items-center mb-6">
+              <div className="bg-transparent dark:bg-transparent sm:bg-white sm:dark:bg-slate-800 rounded-none sm:rounded-xl shadow-none sm:shadow-sm p-0 sm:p-6 border-none sm:border border-slate-200 dark:border-slate-700">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 px-4 sm:px-0">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">Admin Recipients</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400">Manage who receives new lead notifications.</p>
                   </div>
                   <button
                     onClick={async () => {
-                      if (!settings.isEnabled) {
-                        toast.error("Enable notifications first to test.");
+                      const recipients = settings.receiverEmail.split(',').filter(e => e.trim());
+                      if (recipients.length === 0) {
+                        toast.error("Please add at least one recipient first.");
                         return;
                       }
-                      const toastId = toast.loading("Sending test email...");
+
+                      const toastId = toast.loading(`Sending test email to ${recipients.length} recipient(s)...`);
                       try {
                         await api.post('/settings/test-email');
-                        toast.success("Test email sent!", { id: toastId });
+                        toast.success("Test email sent successfully! Please check your inbox.", { id: toastId });
                       } catch (err) {
-                        toast.error("Failed to send test email.", { id: toastId });
+                        console.error('Test email error:', err);
+                        toast.error("Failed to send test email. Please check server logs.", { id: toastId });
                       }
                     }}
-                    className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm"
+                    className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm text-sm"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <Mail className="w-4 h-4" />
                     <span>Send Test Email</span>
                   </button>
                 </div>
 
                 {/* Add New Recipient */}
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-xl border border-indigo-100 dark:border-indigo-800 mb-8">
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-none sm:rounded-xl border-y sm:border border-indigo-100 dark:border-indigo-800 mb-8">
                   <h4 className="flex items-center text-sm font-bold text-indigo-700 dark:text-indigo-300 mb-4">
                     <span className="mr-2 text-lg">+</span> Add New Recipient
                   </h4>
@@ -732,13 +737,13 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
 
                 {/* Current Recipients List */}
                 <div>
-                  <h4 className="flex items-center text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4">
+                  <h4 className="flex items-center text-sm font-semibold text-slate-600 dark:text-slate-400 mb-4 px-4 sm:px-0">
                     <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                     Current Recipients ({settings.receiverEmail.split(',').filter(e => e.trim()).length})
                   </h4>
                   <div className="space-y-3">
                     {settings.receiverEmail.split(',').map(e => e.trim()).filter(e => e).map((email, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group">
+                      <div key={idx} className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-none sm:rounded-xl border-b sm:border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors group">
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold text-sm">
                             {email.substring(0, 2).toUpperCase()}
@@ -767,41 +772,27 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                   </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex items-center">
-                  <input
-                    id="isEnabled"
-                    type="checkbox"
-                    checked={settings.isEnabled}
-                    onChange={(e) => {
-                      const newState = { ...settings, isEnabled: e.target.checked };
-                      updateSettingsMutation.mutate(newState);
-                    }}
-                    className="h-5 w-5 text-amber-600 focus:ring-amber-500 border-slate-300 rounded cursor-pointer"
-                  />
-                  <label htmlFor="isEnabled" className="ml-3 block text-sm font-medium text-slate-900 dark:text-white cursor-pointer select-none">
-                    Enable Email Notifications
-                  </label>
-                </div>
+
               </div>
 
               {/* Email Logs (Moved here) */}
               {emailLogs.length > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-white dark:bg-slate-800 rounded-none sm:rounded-xl shadow-none sm:shadow-sm border-y sm:border border-slate-200 dark:border-slate-700 overflow-hidden">
                   <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex justify-between items-center">
                     <h3 className="text-md font-medium text-slate-900 dark:text-white">Email Logs</h3>
                     <span className="text-xs text-slate-500">Recent activity</span>
                   </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-700">
                     {emailLogs.map((log) => (
-                      <div key={log.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-2 h-2 rounded-full ${log.status === 'SUCCESS' ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
-                          <div>
-                            <div className="text-sm font-medium text-slate-900 dark:text-white truncate max-w-xs">{log.subject}</div>
-                            <div className="text-xs text-slate-500">To: {log.recipient} • {new Date(log.sentAt).toLocaleString()}</div>
+                      <div key={log.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors gap-2 sm:gap-0">
+                        <div className="flex items-center space-x-3 w-full sm:w-auto overflow-hidden">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${log.status === 'SUCCESS' ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white truncate">{log.subject}</div>
+                            <div className="text-xs text-slate-500 truncate">To: {log.recipient} • {new Date(log.sentAt).toLocaleString()}</div>
                           </div>
                         </div>
-                        <div>
+                        <div className="pl-5 sm:pl-0">
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium uppercase ${log.status === 'SUCCESS'
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400'
                             : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
