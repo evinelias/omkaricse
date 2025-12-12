@@ -327,7 +327,7 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
       )}
 
       {/* Reduced py-6 to py-2 here */}
-      <div className="max-w-7xl mx-auto pt-0 pb-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto pt-0 pb-6 px-1 sm:px-6 lg:px-8">
 
         {/* Tabs */}
         <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700">
@@ -432,9 +432,9 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                   <div className="overflow-x-auto">
 
 
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="hidden lg:block bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
                       {/* Desktop Table: Hidden on mobile/tablet, visible on large screens+ */}
-                      <div className="hidden lg:block overflow-x-auto">
+                      <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                           <thead className="bg-slate-50 dark:bg-slate-700/50">
                             <tr>
@@ -510,98 +510,98 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                           </tbody>
                         </table>
                       </div>
+                    </div>
 
-                      {/* Mobile/Tablet Card View: Visible on screens < lg */}
-                      <div className="lg:hidden space-y-4 p-4 bg-slate-50 dark:bg-slate-900/50">
-                        {filteredLeads.map((lead) => {
-                          let cardClass = "bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border-l-4 transition-all active:scale-[0.99] relative overflow-hidden";
-                          let statusColor = "";
-                          let statusLabel = "";
+                    {/* Mobile/Tablet Card View: Visible on screens < lg */}
+                    <div className="lg:hidden space-y-4">
+                      {filteredLeads.map((lead) => {
+                        let cardClass = "bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border-l-4 transition-all active:scale-[0.99] relative overflow-hidden";
+                        let statusColor = "";
+                        let statusLabel = "";
 
-                          switch (lead.status) {
-                            case 'CONTACTED':
-                              cardClass += " border-amber-400";
-                              statusColor = "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400";
-                              statusLabel = "Contacted";
-                              break;
-                            case 'QUALIFIED':
-                              cardClass += " border-emerald-400";
-                              statusColor = "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400";
-                              statusLabel = "Qualified";
-                              break;
-                            case 'UNQUALIFIED':
-                              cardClass += " border-red-400";
-                              statusColor = "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400";
-                              statusLabel = "Unqualified";
-                              break;
-                            case 'NEW':
-                            default:
-                              cardClass += " border-sky-500";
-                              statusColor = "text-sky-600 bg-sky-50 dark:bg-sky-900/20 dark:text-sky-400";
-                              statusLabel = "New";
-                              break;
-                          }
+                        switch (lead.status) {
+                          case 'CONTACTED':
+                            cardClass += " border-amber-400";
+                            statusColor = "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400";
+                            statusLabel = "Contacted";
+                            break;
+                          case 'QUALIFIED':
+                            cardClass += " border-emerald-400";
+                            statusColor = "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400";
+                            statusLabel = "Qualified";
+                            break;
+                          case 'UNQUALIFIED':
+                            cardClass += " border-red-400";
+                            statusColor = "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400";
+                            statusLabel = "Unqualified";
+                            break;
+                          case 'NEW':
+                          default:
+                            cardClass += " border-sky-500";
+                            statusColor = "text-sky-600 bg-sky-50 dark:bg-sky-900/20 dark:text-sky-400";
+                            statusLabel = "New";
+                            break;
+                        }
 
-                          return (
-                            <div key={lead.id} className={cardClass}>
-                              <div className="flex justify-between items-start mb-3">
-                                <div className="pr-2">
-                                  {lead.studentName && <h4 className="font-bold text-slate-900 dark:text-white text-lg">{lead.studentName}</h4>}
-                                  <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">{lead.name}</p>
-                                </div>
-                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap ${statusColor}`}>
-                                  {statusLabel}
-                                </span>
+                        return (
+                          <div key={lead.id} className={cardClass}>
+                            <div className="flex justify-between items-start mb-3">
+                              <div className="pr-2">
+                                {lead.studentName && <h4 className="font-bold text-slate-900 dark:text-white text-lg">{lead.studentName}</h4>}
+                                <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">{lead.name}</p>
                               </div>
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap ${statusColor}`}>
+                                {statusLabel}
+                              </span>
+                            </div>
 
-                              <div className="mb-4 space-y-2">
-                                <a href={`mailto:${lead.email}`} className="flex items-center text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-700 p-3 rounded-lg transition-all group shadow-sm">
-                                  <div className="bg-white dark:bg-slate-800 p-1.5 rounded-md mr-3 text-slate-400 group-hover:text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                  </div>
-                                  <span className="truncate font-medium">{lead.email}</span>
-                                </a>
-                                <a href={`tel:${lead.phone}`} className="flex items-center text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-700 p-3 rounded-lg transition-all group shadow-sm">
-                                  <div className="bg-white dark:bg-slate-800 p-1.5 rounded-md mr-3 text-slate-400 group-hover:text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                    </svg>
-                                  </div>
-                                  <span className="break-all font-medium">{lead.phone}</span>
-                                </a>
-                              </div>
-
-                              <div className="flex items-center text-sm text-slate-600 dark:text-slate-300 mb-4 bg-slate-50 dark:bg-slate-700/30 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
-                                <div className="flex-1">
-                                  <span className="block text-xs text-slate-400 uppercase font-bold mb-0.5">Grade</span>
-                                  <span className="font-semibold block truncate">{lead.grade || 'N/A'}</span>
+                            <div className="mb-4 space-y-2">
+                              <a href={`mailto:${lead.email}`} className="flex items-center text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-700 p-3 rounded-lg transition-all group shadow-sm">
+                                <div className="bg-white dark:bg-slate-800 p-1.5 rounded-md mr-3 text-slate-400 group-hover:text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
                                 </div>
-                                <div className="w-px h-8 bg-slate-200 dark:bg-slate-600 mx-3"></div>
-                                <div className="flex-1 text-right">
-                                  <span className="block text-xs text-slate-400 uppercase font-bold mb-0.5">Date</span>
-                                  <span className="font-semibold block truncate">{new Date(lead.createdAt).toLocaleDateString()}</span>
+                                <span className="truncate font-medium">{lead.email}</span>
+                              </a>
+                              <a href={`tel:${lead.phone}`} className="flex items-center text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-700 p-3 rounded-lg transition-all group shadow-sm">
+                                <div className="bg-white dark:bg-slate-800 p-1.5 rounded-md mr-3 text-slate-400 group-hover:text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                  </svg>
                                 </div>
-                              </div>
+                                <span className="break-all font-medium">{lead.phone}</span>
+                              </a>
+                            </div>
 
-                              <div className="grid grid-cols-1 gap-2">
-                                <button
-                                  onClick={() => setSelectedLead(lead)}
-                                  className="w-full flex items-center justify-center py-3 px-4 text-indigo-600 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:text-indigo-300 dark:hover:text-white dark:hover:bg-indigo-600 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-all font-semibold text-sm shadow-sm"
-                                >
-                                  View Details
-                                </button>
+                            <div className="flex items-center text-sm text-slate-600 dark:text-slate-300 mb-4 bg-slate-50 dark:bg-slate-700/30 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                              <div className="flex-1">
+                                <span className="block text-xs text-slate-400 uppercase font-bold mb-0.5">Grade</span>
+                                <span className="font-semibold block truncate">{lead.grade || 'N/A'}</span>
+                              </div>
+                              <div className="w-px h-8 bg-slate-200 dark:bg-slate-600 mx-3"></div>
+                              <div className="flex-1 text-right">
+                                <span className="block text-xs text-slate-400 uppercase font-bold mb-0.5">Date</span>
+                                <span className="font-semibold block truncate">{new Date(lead.createdAt).toLocaleDateString()}</span>
                               </div>
                             </div>
-                          );
-                        })}
-                        {filteredLeads.length === 0 && (
-                          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                            No leads found matching your criteria.
+
+                            <div className="grid grid-cols-1 gap-2">
+                              <button
+                                onClick={() => setSelectedLead(lead)}
+                                className="w-full flex items-center justify-center py-3 px-4 text-indigo-600 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:text-indigo-300 dark:hover:text-white dark:hover:bg-indigo-600 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-all font-semibold text-sm shadow-sm"
+                              >
+                                View Details
+                              </button>
+                            </div>
                           </div>
-                        )}
-                      </div>
+                        );
+                      })}
+                      {filteredLeads.length === 0 && (
+                        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                          No leads found matching your criteria.
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
