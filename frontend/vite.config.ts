@@ -19,24 +19,38 @@ export default defineConfig(({ mode }) => {
         registerType: 'autoUpdate',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
-          name: 'Omkar International School',
-          short_name: 'OIS',
-          description: 'Omkar International School Admin & Website',
+          name: 'OIS Admin',
+          short_name: 'OIS Admin',
+          description: 'Omkar International School Admin Dashboard',
           theme_color: '#ffffff',
-          start_url: '/admin/login', // Open directly to Admin Login when installed
+          background_color: '#ffffff', // Ensures white splash screen background
+          start_url: '/admin/login',
           display: 'standalone',
+          orientation: 'portrait', // Forces portrait mode for native feel
           icons: [
             {
-              src: 'pwa-192x192.png', // User might not have these yet, but good for boilerplate
-              sizes: '192x192',
-              type: 'image/png'
+              src: '/images/144x144.png',
+              sizes: '144x144',
+              type: 'image/png',
+              purpose: 'any'
             },
             {
-              src: 'pwa-512x512.png',
+              src: '/images/192x192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: '/images/512x512.png',
               sizes: '512x512',
-              type: 'image/png'
+              type: 'image/png',
+              purpose: 'any'
             }
           ]
+        },
+        devOptions: {
+          enabled: true,
+          type: 'module'
         }
       })
     ],

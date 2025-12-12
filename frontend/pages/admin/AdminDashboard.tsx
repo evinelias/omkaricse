@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import api from '../../api';
 import { useNavigate } from 'react-router-dom';
 import PageSEO from '../../components/ui/PageSEO';
-import { LogOut, Table, Settings, Download, Search, Trash2, Copy } from 'lucide-react';
+import { LogOut, Table, Settings, Download, Search, Trash2, Copy, Mail, CheckCircle, XCircle, BarChart2, Users, PlusCircle, Phone } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -364,34 +364,35 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                     <p className="text-sm opacity-80">Total Leads</p>
                     <h3 className="text-3xl font-bold">{stats.total}</h3>
                   </div>
-                  <div className="absolute right-2 bottom-2 opacity-20"><Table className="w-8 h-8" /></div>
+                  <div className="absolute right-2 bottom-2 bg-white/20 p-2 rounded-lg"><Users className="w-6 h-6 text-white" /></div>
                 </div>
                 <div className="bg-sky-500 text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
                   <div className="relative z-10">
                     <p className="text-sm opacity-80">New Leads</p>
                     <h3 className="text-3xl font-bold">{stats.new}</h3>
                   </div>
-                  <div className="absolute right-2 bottom-2 opacity-20 flex font-bold text-3xl">+</div>
+                  <div className="absolute right-2 bottom-2 bg-white/20 p-2 rounded-lg"><PlusCircle className="w-6 h-6 text-white" /></div>
                 </div>
                 <div className="bg-amber-500 text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
                   <div className="relative z-10">
                     <p className="text-sm opacity-80">Contacted</p>
                     <h3 className="text-3xl font-bold">{stats.contacted}</h3>
                   </div>
+                  <div className="absolute right-2 bottom-2 bg-white/20 p-2 rounded-lg"><Phone className="w-6 h-6 text-white" /></div>
                 </div>
                 <div className="bg-emerald-500 text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
                   <div className="relative z-10">
                     <p className="text-sm opacity-80">Qualified</p>
                     <h3 className="text-3xl font-bold">{stats.qualified}</h3>
                   </div>
-                  <div className="absolute right-2 bottom-2 opacity-20">✓</div>
+                  <div className="absolute right-2 bottom-2 bg-white/20 p-2 rounded-lg"><CheckCircle className="w-6 h-6 text-white" /></div>
                 </div>
                 <div className="bg-red-500 text-white p-4 rounded-xl shadow-lg relative overflow-hidden">
                   <div className="relative z-10">
                     <p className="text-sm opacity-80">Unqualified</p>
                     <h3 className="text-3xl font-bold">{stats.unqualified}</h3>
                   </div>
-                  <div className="absolute right-2 bottom-2 opacity-20">✕</div>
+                  <div className="absolute right-2 bottom-2 bg-white/20 p-2 rounded-lg"><XCircle className="w-6 h-6 text-white" /></div>
                 </div>
               </div>
 
@@ -429,150 +430,183 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                   </div>
 
                   <div className="overflow-x-auto">
-                    {/* Mobile Card View */}
-                    <div className="md:hidden grid grid-cols-1 gap-4 mb-4">
-                      {filteredLeads.map((lead) => {
-                        let cardClass = "bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border-l-4 transition-all";
-                        let statusColor = "";
-                        switch (lead.status) {
-                          case 'CONTACTED':
-                            cardClass += " border-amber-400 bg-amber-50/50 dark:bg-amber-900/10";
-                            statusColor = "text-amber-600 dark:text-amber-400";
-                            break;
-                          case 'QUALIFIED':
-                            cardClass += " border-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10";
-                            statusColor = "text-emerald-600 dark:text-emerald-400";
-                            break;
-                          case 'UNQUALIFIED':
-                            cardClass += " border-red-400 bg-red-50/50 dark:bg-red-900/10";
-                            statusColor = "text-red-600 dark:text-red-400";
-                            break;
-                          case 'NEW':
-                          default:
-                            cardClass += " border-sky-500 bg-sky-50/50 dark:bg-sky-900/10";
-                            statusColor = "text-sky-600 dark:text-sky-400";
-                            break;
-                        }
 
-                        return (
-                          <div key={lead.id} className={cardClass}>
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <h4 className="font-bold text-slate-900 dark:text-white text-lg">{lead.studentName || 'No Student Name'}</h4>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">{lead.name} (Parent)</p>
-                              </div>
-                              <div className={`text-xs font-bold px-2 py-1 rounded-full bg-white/50 dark:bg-black/20 ${statusColor}`}>
-                                {lead.status}
-                              </div>
-                            </div>
 
-                            <div className="space-y-1 text-sm text-slate-600 dark:text-slate-300 mb-3">
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">Grade:</span>
-                                <span>{lead.grade || 'N/A'}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">Date:</span>
-                                <span>{new Date(lead.createdAt).toLocaleDateString()}</span>
-                              </div>
-                              <div className="flex items-center">
-                                <span className="font-semibold w-16">Email:</span>
-                                <span className="break-all">{lead.email}</span>
-                              </div>
-                            </div>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                      {/* Desktop Table: Hidden on mobile/tablet, visible on large screens+ */}
+                      <div className="hidden lg:block overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                          <thead className="bg-slate-50 dark:bg-slate-700/50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Student Name</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Parent Name</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Grade</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Contact Info</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Date</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Message</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                            {filteredLeads.map((lead) => {
+                              let rowClass = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group border-l-4";
+                              switch (lead.status) {
+                                case 'CONTACTED':
+                                  rowClass += " bg-amber-50/50 dark:bg-amber-900/10 border-amber-400";
+                                  break;
+                                case 'QUALIFIED':
+                                  rowClass += " bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-400";
+                                  break;
+                                case 'UNQUALIFIED':
+                                  rowClass += " bg-red-50/50 dark:bg-red-900/10 border-red-400";
+                                  break;
+                                case 'NEW':
+                                default:
+                                  rowClass += " bg-sky-50/50 dark:bg-sky-900/10 border-sky-500";
+                                  break;
+                              }
 
-                            <div className="flex justify-end pt-2 border-t border-slate-200 dark:border-slate-700/50">
-                              <button
-                                onClick={() => setSelectedLead(lead)}
-                                className="w-full text-center text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg font-medium transition-colors"
-                              >
-                                View Details
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                              return (
+                                <tr key={lead.id} className={rowClass}>
+                                  <td className="px-6 py-4 align-top">
+                                    <div className="text-sm font-bold text-slate-900 dark:text-white break-words min-w-[120px]">{lead.studentName || '-'}</div>
+                                  </td>
+                                  <td className="px-6 py-4 align-top">
+                                    <div className="text-sm text-slate-900 dark:text-white break-words min-w-[120px]">{lead.name}</div>
+                                  </td>
+                                  <td className="px-6 py-4 align-top">
+                                    <div className="text-sm text-slate-900 dark:text-white min-w-[80px]">{lead.grade || 'N/A'}</div>
+                                  </td>
+                                  <td className="px-6 py-4 align-top">
+                                    <div className="text-sm text-slate-600 dark:text-slate-300 flex flex-col break-all min-w-[150px]">
+                                      <span>{lead.email}</span>
+                                      <span className="text-slate-400 text-xs">{lead.phone}</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 align-top min-w-[110px]">
+                                    <div className="font-medium text-slate-900 dark:text-white">{new Date(lead.createdAt).toLocaleDateString()}</div>
+                                    <div className="text-xs text-slate-400">{new Date(lead.createdAt).toLocaleTimeString()}</div>
+                                  </td>
+                                  <td className="px-6 py-4 align-top min-w-[200px]">
+                                    {lead.message ? (
+                                      <div className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 hover:line-clamp-none transition-all cursor-pointer break-words" title={lead.message}>
+                                        {lead.message}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-slate-400 italic">No message</span>
+                                    )}
+                                  </td>
+                                  <td className="px-6 py-4 text-right text-sm font-medium align-top whitespace-nowrap">
+                                    <button
+                                      onClick={() => setSelectedLead(lead)}
+                                      className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded shadow-sm border border-indigo-200 dark:border-indigo-800 transition-all hover:shadow-md"
+                                    >
+                                      View Details
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
 
-                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 hidden md:table">
-                      <thead className="bg-slate-50 dark:bg-slate-700/50">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Student Name</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Parent Name</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Grade</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Contact Info</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Message</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
+                      {/* Mobile/Tablet Card View: Visible on screens < lg */}
+                      <div className="lg:hidden space-y-4 p-4 bg-slate-50 dark:bg-slate-900/50">
                         {filteredLeads.map((lead) => {
-                          let rowClass = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group border-l-4";
+                          let cardClass = "bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border-l-4 transition-all active:scale-[0.99] relative overflow-hidden";
+                          let statusColor = "";
+                          let statusLabel = "";
+
                           switch (lead.status) {
                             case 'CONTACTED':
-                              rowClass += " bg-amber-50/50 dark:bg-amber-900/10 border-amber-400";
+                              cardClass += " border-amber-400";
+                              statusColor = "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400";
+                              statusLabel = "Contacted";
                               break;
                             case 'QUALIFIED':
-                              rowClass += " bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-400";
+                              cardClass += " border-emerald-400";
+                              statusColor = "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400";
+                              statusLabel = "Qualified";
                               break;
                             case 'UNQUALIFIED':
-                              rowClass += " bg-red-50/50 dark:bg-red-900/10 border-red-400";
+                              cardClass += " border-red-400";
+                              statusColor = "text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400";
+                              statusLabel = "Unqualified";
                               break;
                             case 'NEW':
                             default:
-                              rowClass += " bg-sky-50/50 dark:bg-sky-900/10 border-sky-500";
+                              cardClass += " border-sky-500";
+                              statusColor = "text-sky-600 bg-sky-50 dark:bg-sky-900/20 dark:text-sky-400";
+                              statusLabel = "New";
                               break;
                           }
 
                           return (
-                            <tr key={lead.id} className={rowClass}>
-                              {/* Removed whitespace-nowrap and added min-w/break-words everywhere */}
-                              <td className="px-6 py-4 align-top">
-                                <div className="text-sm font-bold text-slate-900 dark:text-white break-words min-w-[120px]">{lead.studentName || '-'}</div>
-                              </td>
-                              <td className="px-6 py-4 align-top">
-                                <div className="text-sm text-slate-900 dark:text-white break-words min-w-[120px]">{lead.name}</div>
-                              </td>
-                              <td className="px-6 py-4 align-top">
-                                <div className="text-sm text-slate-900 dark:text-white min-w-[80px]">{lead.grade || 'N/A'}</div>
-                              </td>
-                              <td className="px-6 py-4 align-top">
-                                <div className="text-sm text-slate-600 dark:text-slate-300 flex flex-col break-all min-w-[150px]">
-                                  <span>{lead.email}</span>
-                                  <span className="text-slate-400 text-xs">{lead.phone}</span>
+                            <div key={lead.id} className={cardClass}>
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="pr-2">
+                                  {lead.studentName && <h4 className="font-bold text-slate-900 dark:text-white text-lg">{lead.studentName}</h4>}
+                                  <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">{lead.name}</p>
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 align-top min-w-[110px]">
-                                <div className="font-medium text-slate-900 dark:text-white">{new Date(lead.createdAt).toLocaleDateString()}</div>
-                                <div className="text-xs text-slate-400">{new Date(lead.createdAt).toLocaleTimeString()}</div>
-                              </td>
-                              <td className="px-6 py-4 align-top min-w-[200px]">
-                                {lead.message ? (
-                                  <div className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 hover:line-clamp-none transition-all cursor-pointer break-words" title={lead.message}>
-                                    {lead.message}
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap ${statusColor}`}>
+                                  {statusLabel}
+                                </span>
+                              </div>
+
+                              <div className="mb-4 space-y-2">
+                                <a href={`mailto:${lead.email}`} className="flex items-center text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-700 p-3 rounded-lg transition-all group shadow-sm">
+                                  <div className="bg-white dark:bg-slate-800 p-1.5 rounded-md mr-3 text-slate-400 group-hover:text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
                                   </div>
-                                ) : (
-                                  <span className="text-xs text-slate-400 italic">No message</span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-right text-sm font-medium align-top whitespace-nowrap">
+                                  <span className="truncate font-medium">{lead.email}</span>
+                                </a>
+                                <a href={`tel:${lead.phone}`} className="flex items-center text-sm text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-600 hover:border-indigo-300 dark:hover:border-indigo-700 p-3 rounded-lg transition-all group shadow-sm">
+                                  <div className="bg-white dark:bg-slate-800 p-1.5 rounded-md mr-3 text-slate-400 group-hover:text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                  </div>
+                                  <span className="break-all font-medium">{lead.phone}</span>
+                                </a>
+                              </div>
+
+                              <div className="flex items-center text-sm text-slate-600 dark:text-slate-300 mb-4 bg-slate-50 dark:bg-slate-700/30 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                <div className="flex-1">
+                                  <span className="block text-xs text-slate-400 uppercase font-bold mb-0.5">Grade</span>
+                                  <span className="font-semibold block truncate">{lead.grade || 'N/A'}</span>
+                                </div>
+                                <div className="w-px h-8 bg-slate-200 dark:bg-slate-600 mx-3"></div>
+                                <div className="flex-1 text-right">
+                                  <span className="block text-xs text-slate-400 uppercase font-bold mb-0.5">Date</span>
+                                  <span className="font-semibold block truncate">{new Date(lead.createdAt).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-1 gap-2">
                                 <button
                                   onClick={() => setSelectedLead(lead)}
-                                  // Increased padding to px-4 py-2
-                                  className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded shadow-sm border border-indigo-200 dark:border-indigo-800 transition-all hover:shadow-md"
+                                  className="w-full flex items-center justify-center py-3 px-4 text-indigo-600 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:text-indigo-300 dark:hover:text-white dark:hover:bg-indigo-600 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-all font-semibold text-sm shadow-sm"
                                 >
                                   View Details
                                 </button>
-                              </td>
-                            </tr>
+                              </div>
+                            </div>
                           );
                         })}
-                      </tbody>
-                    </table>
+                        {filteredLeads.length === 0 && (
+                          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                            No leads found matching your criteria.
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
+
             </>
           ) : (
             <div className="max-w-4xl mx-auto space-y-8">
@@ -588,8 +622,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                         <div className="text-3xl font-bold">{emailStats.total}</div>
                         <div className="text-xs mt-2 opacity-70">↗ Real-time data</div>
                       </div>
-                      <div className="absolute right-4 bottom-4 opacity-20 bg-white p-2 rounded-lg">
-                        <div className="w-6 h-6">✉</div>
+                      <div className="absolute right-4 bottom-4 bg-white/20 p-2 rounded-lg">
+                        <Mail className="w-6 h-6 text-white" />
                       </div>
                     </div>
 
@@ -599,8 +633,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                         <div className="text-3xl font-bold">{emailStats.success}</div>
                         <div className="text-xs mt-2 opacity-70">✓ Delivery rate</div>
                       </div>
-                      <div className="absolute right-4 bottom-4 opacity-20 bg-white p-2 rounded-lg">
-                        <div className="w-6 h-6">✓</div>
+                      <div className="absolute right-4 bottom-4 bg-white/20 p-2 rounded-lg">
+                        <CheckCircle className="w-6 h-6 text-white" />
                       </div>
                     </div>
 
@@ -610,8 +644,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                         <div className="text-3xl font-bold">{emailStats.failed}</div>
                         <div className="text-xs mt-2 opacity-70">✕ Delivery failures</div>
                       </div>
-                      <div className="absolute right-4 bottom-4 opacity-20 bg-white p-2 rounded-lg">
-                        <div className="w-6 h-6">✕</div>
+                      <div className="absolute right-4 bottom-4 bg-white/20 p-2 rounded-lg">
+                        <XCircle className="w-6 h-6 text-white" />
                       </div>
                     </div>
 
@@ -621,8 +655,8 @@ Date: ${new Date(lead.createdAt).toLocaleDateString()}
                         <div className="text-3xl font-bold">{emailStats.successRate}%</div>
                         <div className="text-xs mt-2 opacity-70">↗ Performance metric</div>
                       </div>
-                      <div className="absolute right-4 bottom-4 opacity-20 bg-white p-2 rounded-lg">
-                        <div className="w-6 h-6">📊</div>
+                      <div className="absolute right-4 bottom-4 bg-white/20 p-2 rounded-lg">
+                        <BarChart2 className="w-6 h-6 text-white" />
                       </div>
                     </div>
                   </div>
