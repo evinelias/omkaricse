@@ -17,17 +17,10 @@ export default defineConfig(({ mode }) => {
       viteCompression(),
       VitePWA({
         registerType: 'autoUpdate',
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'service-worker.js',
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-          navigateFallbackDenylist: [/^\/api/], // Don't serve index.html for API
-          runtimeCaching: [
-            {
-              urlPattern: ({ url }) => url.pathname.startsWith('/api'),
-              handler: 'NetworkOnly', // Don't cache API requests
-            }
-          ]
-        },
         manifest: {
           name: 'OIS Admin',
           short_name: 'OIS Admin',

@@ -79,10 +79,15 @@ const AdminDashboard: React.FC = () => {
           });
         } catch (err) {
           console.error('PWA Notification Error:', err);
-          new Notification('New Lead Received! 🚀', {
+          const n = new Notification('New Lead Received! 🚀', {
             body: `From: ${data.name}`,
             icon: '/favicon.ico'
           });
+          n.onclick = (e) => {
+            e.preventDefault();
+            window.focus();
+            navigate('/admin/dashboard?tab=leads');
+          };
         }
       }
       toast.success('New Lead Received! 🚀');
@@ -108,10 +113,15 @@ const AdminDashboard: React.FC = () => {
             });
           } catch (err) {
             console.error('PWA Notification Error:', err);
-            new Notification('New Activity Logged 🛡️', {
+            const n = new Notification('New Activity Logged 🛡️', {
               body: `${data.admin?.name || 'Admin'}: ${data.action}`,
               icon: '/favicon.ico'
             });
+            n.onclick = (e) => {
+              e.preventDefault();
+              window.focus();
+              navigate('/admin/dashboard?tab=activity');
+            };
           }
         }
       }
