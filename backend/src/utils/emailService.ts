@@ -1,6 +1,7 @@
 import { MailtrapClient } from "mailtrap";
 import { PrismaClient } from '@prisma/client';
 
+// Use a global instance if needed, but per-file is fine for this scale
 const prisma = new PrismaClient();
 
 const getMailtrapClient = () => {
@@ -11,27 +12,67 @@ const getMailtrapClient = () => {
     return new MailtrapClient({ token });
 };
 
+// Generic send function
+export const sendEmail = async (to: string | string[], subject: string, html: string, category: string = "Notification") => {
+    try {
+        const client = getMailtrapClient();
+        const recipients = Array.isArray(to) ? to.map(email => ({ email })) : [{ email: to }];
+
+        if (recipients.length === 0) return;
+
+        const sender = {
+            email: "leads@omkaricse.in",
+            name: "OIS Website Bot",
+        };
+
+        const response = await client.send({
+            from: sender,
+            to: recipients,
+            subject: subject,
+            html: html,
+            category: category,
+        });
+
+        if (response.success && response.message_ids.length > 0) {
+            // Log success for each recipient
+            const ids = response.message_ids.join(', ');
+            for (const recipient of recipients) {
+                await prisma.emailLog.create({
+                    data: {
+                        recipient: recipient.email,
+                        subject: `${subject} (ID: ${ids})`,
+                        status: 'SUCCESS'
+                    }
+                });
+            }
+        }
+        return response;
+
+    } catch (error: any) {
+        console.error("Failed to send email:", error);
+        // Log Failure
+        const recipientStr = Array.isArray(to) ? to.join(', ') : to;
+        await prisma.emailLog.create({
+            data: {
+                recipient: recipientStr,
+                subject: subject,
+                status: 'FAILED',
+                error: error.message || 'Unknown Error'
+            }
+        });
+        throw error;
+    }
+}
+
 export const sendLeadNotification = async (lead: any) => {
     try {
-        const config = await prisma.emailConfig.findUnique({ where: { id: 1 } });
+        const config = await prisma.emailConfig.findFirst({ where: { id: 1 } });
         if (!config || !config.isEnabled) {
             console.log("Email notifications disabled or config missing.");
-            return; // Emails disabled
-        }
-
-        const client = getMailtrapClient();
-
-        // Parse recipients (comma separated)
-        const recipientList = config.receiverEmail
-            .split(',')
-            .map(email => email.trim())
-            .filter(email => email.length > 0)
-            .map(email => ({ email: email })); // Mailtrap requires { email: "..." }
-
-        if (recipientList.length === 0) {
-            console.log("No valid recipients configured.");
             return;
         }
+
+        const validRecipients = config.receiverEmails || ["admin@omkaricse.in"];
 
         const htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -91,52 +132,9 @@ export const sendLeadNotification = async (lead: any) => {
             </div>
         `;
 
-        const sender = {
-            email: "leads@omkaricse.in",
-            name: "OIS Website Bot",
-        };
-
-        const response = await client.send({
-            from: sender,
-            to: recipientList,
-            subject: `New Lead: ${lead.name}`,
-            html: htmlContent,
-            category: "New Lead Notification",
-        });
-
-        console.log(`Email sent. Success: ${response.success}`);
-
-        // Mailtrap returns { success: true, message_ids: string[] }
-        if (response.success && response.message_ids.length > 0) {
-            // We just log success for each recipient (or map IDs if we knew which ID mapped to which email, but Mailtrap usually gives a list)
-            // For simplicity, we log success for all recipients with the first ID or joined IDs
-            const ids = response.message_ids.join(', ');
-
-            for (const recipient of recipientList) {
-                await prisma.emailLog.create({
-                    data: {
-                        recipient: recipient.email,
-                        subject: `New Lead: ${lead.name} (IDs: ${ids})`,
-                        status: 'SUCCESS'
-                    }
-                });
-            }
-        }
+        await sendEmail(validRecipients, `New Lead: ${lead.name}`, htmlContent, "New Lead Notification");
 
     } catch (error: any) {
-        console.error("Failed to send email (Mailtrap):", error);
-
-        // Log Failure
-        const config = await prisma.emailConfig.findUnique({ where: { id: 1 } });
-        if (config) {
-            await prisma.emailLog.create({
-                data: {
-                    recipient: config.receiverEmail, // Log raw string
-                    subject: `New Lead: ${lead.name}`,
-                    status: 'FAILED',
-                    error: error.message || 'Unknown Error'
-                }
-            });
-        }
+        console.error("Failed to send email notification:", error);
     }
 };

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import ExcelJS from 'exceljs';
 import { sendLeadNotification } from '../utils/emailService';
+import { logActivity } from '../utils/activityLogger';
 import axios from 'axios'; // Added axios import
 
 const prisma = new PrismaClient();
@@ -69,16 +70,29 @@ export const createLead = async (req: Request, res: Response) => {
     }
 };
 
+
+
 // Update Lead Status (Protected)
 export const updateLeadStatus = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { status } = req.body;
+        const adminId = (req as any).user?.id;
+
+        // Fetch admin name for lastModifiedBy
+        const admin = await prisma.admin.findUnique({ where: { id: adminId } });
+        const modifierName = admin?.name || 'Unknown Admin';
 
         const lead = await prisma.lead.update({
             where: { id: Number(id) },
-            data: { status }
+            data: {
+                status,
+                lastModifiedBy: modifierName
+            }
         });
+
+        await logActivity(adminId, 'UPDATE_LEAD_STATUS', `Changed status of lead #${id} (${lead.name}) to ${status}`);
+
         res.json(lead);
     } catch (error) {
         console.error('Error updating lead status:', error);
@@ -90,12 +104,46 @@ export const updateLeadStatus = async (req: Request, res: Response) => {
 export const getLeads = async (req: Request, res: Response) => {
     try {
         const leads = await prisma.lead.findMany({
+            include: {
+                _count: { select: { remarks: true } },
+                remarks: {
+                    take: 1,
+                    orderBy: { createdAt: 'desc' },
+                    include: { admin: { select: { name: true } } }
+                }
+            },
             orderBy: { createdAt: 'desc' },
         });
         res.json(leads);
     } catch (error) {
         console.error('Error fetching leads:', error);
         res.status(500).json({ message: 'Failed to fetch leads', error: error instanceof Error ? error.message : String(error) });
+    }
+};
+
+// ... (exportLeads, deleteLead, addLeadRemark, getLeadRemarks) ...
+
+// Delete Remark
+export const deleteLeadRemark = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const adminId = (req as any).user?.id;
+        const userRole = (req as any).user?.role;
+
+        const remark = await prisma.leadRemark.findUnique({ where: { id: Number(id) } });
+        if (!remark) return res.status(404).json({ error: "Remark not found" });
+
+        if (remark.adminId !== adminId && userRole !== 'SUPER_ADMIN') {
+            return res.status(403).json({ error: "Not authorized to delete this remark" });
+        }
+
+        await prisma.leadRemark.delete({ where: { id: Number(id) } });
+        await logActivity(adminId, 'DELETE_REMARK', `Deleted remark #${id} from lead #${remark.leadId}`);
+
+        res.json({ message: "Remark deleted" });
+    } catch (error) {
+        console.error('Error deleting remark:', error);
+        res.status(500).json({ message: 'Failed to delete remark' });
     }
 };
 
@@ -151,5 +199,48 @@ export const deleteLead = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Error deleting lead:', error);
         res.status(500).json({ message: 'Failed to delete lead' });
+    }
+};
+
+// Add Remark
+export const addLeadRemark = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { remark } = req.body;
+        const adminId = (req as any).user?.id;
+
+        if (!remark) return res.status(400).json({ error: "Remark is required" });
+
+        const newRemark = await prisma.leadRemark.create({
+            data: {
+                leadId: Number(id),
+                adminId,
+                remark
+            },
+            include: { admin: { select: { name: true } } }
+        });
+
+        await logActivity(adminId, 'ADD_REMARK', `Added remark to lead #${id}`);
+
+        res.status(201).json(newRemark);
+    } catch (error) {
+        console.error('Error adding remark:', error);
+        res.status(500).json({ message: 'Failed to add remark' });
+    }
+};
+
+// Get Remarks
+export const getLeadRemarks = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const remarks = await prisma.leadRemark.findMany({
+            where: { leadId: Number(id) },
+            include: { admin: { select: { name: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(remarks);
+    } catch (error) {
+        console.error('Error fetching remarks:', error);
+        res.status(500).json({ message: 'Failed to fetch remarks' });
     }
 };
