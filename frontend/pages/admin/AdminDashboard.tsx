@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import PageSEO from '../../components/ui/PageSEO';
 import { LogOut, Table, Mail, Users, Activity } from 'lucide-react';
 import ThemeSwitcher from '../../components/ui/ThemeSwitcher';
@@ -40,6 +41,99 @@ const AdminDashboard: React.FC = () => {
       }
     }
   }, []);
+
+  // SSE Real-time Updates
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return;
+
+    console.log('🔌 Connecting to SSE...', `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/events`);
+    const eventSource = new EventSource(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/events?token=${token}`);
+
+    eventSource.onopen = () => {
+      console.log('✅ SSE Connected Successfully');
+      setSseStatus('CONNECTED');
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('❌ SSE Connection Error:', err);
+      setSseStatus('DISCONNECTED');
+    };
+
+    eventSource.onmessage = (e) => {
+      // Ping/Keep-alive messages might land here if not named
+      console.log('📩 SSE Raw Message:', e.data);
+    };
+
+    eventSource.addEventListener('new_lead', async (e: MessageEvent) => {
+      console.log('🚀 SSE Event: new_lead', e.data);
+      const data = JSON.parse(e.data);
+      if (Notification.permission === 'granted') {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          registration.showNotification('New Lead Received! 🚀', {
+            body: `From: ${data.name}`,
+            icon: '/favicon.ico',
+            data: { url: `${window.location.origin}/admin/dashboard?tab=leads` }
+          });
+        } catch (err) {
+          console.error('PWA Notification Error:', err);
+          new Notification('New Lead Received! 🚀', {
+            body: `From: ${data.name}`,
+            icon: '/favicon.ico'
+          });
+        }
+      }
+      toast.success('New Lead Received! 🚀');
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+    });
+
+    eventSource.addEventListener('new_activity', async (e: MessageEvent) => {
+      console.log('🛡️ SSE Event: new_activity', e.data);
+      const data = JSON.parse(e.data);
+      console.log('⚡ SSE Activity Received:', data);
+
+      // Fix: Don't notify if I am the one who did the action
+      const myEmail = localStorage.getItem('adminToken') ? JSON.parse(atob(localStorage.getItem('adminToken')!.split('.')[1])).email : '';
+
+      if (data.admin?.email !== myEmail) {
+        if (Notification.permission === 'granted') {
+          try {
+            const registration = await navigator.serviceWorker.ready;
+            registration.showNotification('New Activity Logged 🛡️', {
+              body: `${data.admin?.name || 'Admin'}: ${data.action}`,
+              icon: '/favicon.ico',
+              data: { url: `${window.location.origin}/admin/dashboard?tab=activity` }
+            });
+          } catch (err) {
+            console.error('PWA Notification Error:', err);
+            new Notification('New Activity Logged 🛡️', {
+              body: `${data.admin?.name || 'Admin'}: ${data.action}`,
+              icon: '/favicon.ico'
+            });
+          }
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ['activity'] });
+    });
+
+    eventSource.addEventListener('user_update', () => {
+      console.log('🔄 SSE Event: user_update');
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Admin List Updated 🔄');
+    });
+
+    eventSource.addEventListener('settings_update', () => {
+      console.log('⚙️ SSE Event: settings_update');
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+    });
+
+    return () => {
+      console.log('🔌 Closing SSE Connection');
+      eventSource.close();
+    };
+  }, [queryClient]);
 
   /* Swipe Navigation Logic */
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -88,13 +182,35 @@ const AdminDashboard: React.FC = () => {
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
     Notification.permission
   );
+  const [sseStatus, setSseStatus] = useState<'CONNECTING' | 'CONNECTED' | 'DISCONNECTED'>('CONNECTING');
 
   const requestNotificationPermission = async () => {
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     if (permission === 'granted') {
       toast.success('Notifications enabled!');
-      new Notification('OIS Admin', { body: 'Notifications are now active.' });
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        reg.showNotification('OIS Admin', { body: 'Notifications are now active.' });
+      } catch (e) {
+        new Notification('OIS Admin', { body: 'Notifications are now active.' });
+      }
+    }
+  };
+
+  const testNotification = async () => {
+    if (Notification.permission === 'granted') {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        reg.showNotification('Test Notification 🔔', { body: 'System is working via Service Worker!' });
+        toast.success('Test Notification Sent');
+      } catch (e) {
+        new Notification('Test Notification 🔔', { body: 'System is working via Standard API!' });
+        toast.success('Test Notification Sent (Standard)');
+      }
+    } else {
+      toast.error('Permission not granted');
+      requestNotificationPermission();
     }
   };
 
@@ -116,6 +232,13 @@ const AdminDashboard: React.FC = () => {
               <span className="text-xl font-bold text-amber-600 dark:text-amber-500">OIS Admin</span>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 mr-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${sseStatus === 'CONNECTED' ? 'bg-green-500' : 'bg-red-500'} ${sseStatus === 'CONNECTED' ? '' : 'animate-pulse'}`} title={`System Status: ${sseStatus}`} />
+                <span className="text-[10px] uppercase font-bold text-slate-400 hidden sm:inline-block">{sseStatus}</span>
+                <button onClick={testNotification} className="text-[10px] border border-slate-200 dark:border-slate-700 px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  🔔 Test
+                </button>
+              </div>
               {currentUser && (
                 <div className="flex flex-col items-end mr-1">
                   <span className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 leading-tight">

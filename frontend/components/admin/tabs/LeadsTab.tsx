@@ -32,30 +32,9 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ currentUser }) => {
                 throw error;
             }
         },
-        refetchInterval: 1000,
     });
 
-    // Notification Logic
-    const prevCountRef = React.useRef<number | null>(null);
-    React.useEffect(() => {
-        if (isLoadingLeads) return;
 
-        if (prevCountRef.current !== null && leads.length > prevCountRef.current) {
-            if (Notification.permission === 'granted') {
-                const n = new Notification('New Lead Received! 🚀', {
-                    body: 'A new lead has been submitted.',
-                    icon: '/favicon.ico'
-                });
-                n.onclick = (e) => {
-                    e.preventDefault();
-                    window.focus();
-                    window.location.href = `${window.location.origin}/admin/dashboard?tab=leads`;
-                };
-            }
-            toast('New Lead Received!', { icon: '🚀' });
-        }
-        prevCountRef.current = leads.length;
-    }, [leads.length, isLoadingLeads]);
 
     // Notifications Logic could be here, but simpler to keep in main Dashboard or use a custom hook. 
     // We'll skip Moving notification logic for now to keep it simple, or move it if the user wants. 

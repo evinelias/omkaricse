@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import ExcelJS from 'exceljs';
+import { sseManager } from '../utils/sseManager';
 import { sendLeadNotification } from '../utils/emailService';
 import { logActivity } from '../utils/activityLogger';
 import axios from 'axios'; // Added axios import
@@ -56,6 +57,13 @@ export const createLead = async (req: Request, res: Response) => {
                 inquiryType,
                 status: 'NEW'
             },
+        });
+
+        // Broadcast New Lead via SSE
+        sseManager.broadcast('new_lead', {
+            id: newLead.id,
+            name: newLead.name,
+            createdAt: newLead.createdAt
         });
 
         // Send email notification (async)

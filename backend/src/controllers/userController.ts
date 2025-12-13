@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { sseManager } from '../utils/sseManager';
 
 const prisma = new PrismaClient();
 
@@ -61,6 +62,7 @@ export const createUser = async (req: Request, res: Response) => {
         await logActivity(creatorId, 'CREATE_USER', `Created user ${email}`);
 
         const { password: _, ...userWithoutPassword } = newUser;
+        sseManager.broadcast('user_update', { action: 'create' }); // Broadcast update
         res.status(201).json(userWithoutPassword);
     } catch (error) {
         console.error(error);
@@ -95,6 +97,8 @@ export const updateUser = async (req: Request, res: Response) => {
 
         await logActivity(modifierId, 'UPDATE_USER', `Updated user ${updatedUser.email} (Frozen: ${isFrozen}, Role: ${role})`);
 
+        sseManager.broadcast('user_update', { action: 'update' });
+
         const { password: _, ...userWithoutPassword } = updatedUser;
         res.json(userWithoutPassword);
     } catch (error) {
@@ -127,6 +131,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
         await prisma.admin.delete({ where: { id: Number(id) } });
         await logActivity(deleterId, 'DELETE_USER', `Deleted user ${userToDelete.email}`);
+        sseManager.broadcast('user_update', { action: 'delete' });
 
         res.json({ message: 'User deleted successfully' });
     } catch (error) {

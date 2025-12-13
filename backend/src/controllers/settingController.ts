@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { sendEmail } from '../utils/emailService';
+import { sseManager } from '../utils/sseManager';
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,9 @@ export const updateSettings = async (req: Request, res: Response) => {
             update: { receiverEmails, isEnabled },
             create: { receiverEmails: receiverEmails || ["admin@omkaricse.in"], isEnabled: isEnabled ?? true },
         });
+
+        sseManager.broadcast('settings_update', config);
+
         res.json(config);
     } catch (error) {
         console.error(error);

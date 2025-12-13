@@ -15,10 +15,10 @@ if (!rootElement) {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 24, // 24 hours (Aggressive caching as requested)
-      gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days garbage collection
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
+      staleTime: 0, // Always consider data stale (forces refetch on invalidate)
+      gcTime: 1000 * 60 * 5, // Keep unused data for 5 minutes
+      refetchOnWindowFocus: true, // Refetch when window gains focus
+      refetchOnReconnect: true,
       retry: 1,
     },
   },

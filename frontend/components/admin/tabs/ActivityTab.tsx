@@ -14,42 +14,14 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ currentUser }) => {
     const { data: activityData } = useQuery({
         queryKey: ['activity', activityPage],
         queryFn: async () => {
-            const response = await api.get(`/activity?page=${activityPage}&limit=50`);
+            const response = await api.get(`/activity?page=${activityPage}&limit=50&_t=${Date.now()}`);
             return response.data as { data: ActivityLogItem[], pagination: any };
         },
         enabled: currentUser?.role === 'SUPER_ADMIN' || currentUser?.permissions?.includes('ACTIVITY'),
-        refetchInterval: 1000, // Poll every 1 second
+
     });
 
-    // Notification Logic
-    const prevTopIdRef = React.useRef<number | null>(null);
-    const topLogId = activityData?.data?.[0]?.id;
 
-    React.useEffect(() => {
-        if (topLogId) {
-            if (prevTopIdRef.current !== null && topLogId > prevTopIdRef.current) {
-                // Determine who did it to avoid self-notification?
-                // Actually user requested "Notification for admin details".
-                // But maybe avoid notifying for own actions?
-                // The current user's ID is available as `currentUser.id`.
-                const newestLog = activityData?.data?.[0];
-                if (newestLog && newestLog.admin?.email !== currentUser?.email) {
-                    if (Notification.permission === 'granted') {
-                        const n = new Notification('New Activity Logged 🛡️', {
-                            body: `${newestLog.admin?.name}: ${newestLog.action}`,
-                            icon: '/favicon.ico'
-                        });
-                        n.onclick = (e) => {
-                            e.preventDefault();
-                            window.focus();
-                            window.location.href = `${window.location.origin}/admin/dashboard?tab=activity`;
-                        };
-                    }
-                }
-            }
-            prevTopIdRef.current = topLogId;
-        }
-    }, [topLogId, currentUser?.id, activityData?.data]);
 
     const activityLogs = activityData?.data || [];
     const activityPagination = activityData?.pagination || { totalPages: 1, page: 1 };
