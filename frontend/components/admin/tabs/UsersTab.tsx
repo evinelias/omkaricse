@@ -48,7 +48,7 @@ const UsersTab: React.FC<UsersTabProps> = ({ currentUser }) => {
             return response.data;
         },
         enabled: currentUser?.role === 'SUPER_ADMIN',
-        refetchInterval: 10000, // Poll every 10 seconds
+        refetchInterval: 1000, // Poll every 10 seconds
     });
 
     // Mutations

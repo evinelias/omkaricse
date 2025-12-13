@@ -18,7 +18,7 @@ const ActivityTab: React.FC<ActivityTabProps> = ({ currentUser }) => {
             return response.data as { data: ActivityLogItem[], pagination: any };
         },
         enabled: currentUser?.role === 'SUPER_ADMIN' || currentUser?.permissions?.includes('ACTIVITY'),
-        refetchInterval: 5000, // Poll every 5 seconds
+        refetchInterval: 1000, // Poll every 1 second
     });
 
     // Notification Logic

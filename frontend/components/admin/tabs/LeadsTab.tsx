@@ -32,7 +32,7 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ currentUser }) => {
                 throw error;
             }
         },
-        refetchInterval: 5000,
+        refetchInterval: 1000,
     });
 
     // Notification Logic
