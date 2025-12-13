@@ -16,6 +16,7 @@ const EmailTab: React.FC = () => {
             const response = await api.get('/settings');
             return response.data;
         },
+        refetchInterval: 10000,
     });
 
     const { data: emailData } = useQuery({
@@ -24,6 +25,7 @@ const EmailTab: React.FC = () => {
             const response = await api.get('/settings/email-stats');
             return response.data;
         },
+        refetchInterval: 10000,
     });
 
     // Initialize state from fetched data & Force Enable

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import PageSEO from '../../components/ui/PageSEO';
 import { LogOut, Table, Mail, Users, Activity } from 'lucide-react';
 import ThemeSwitcher from '../../components/ui/ThemeSwitcher';
@@ -11,7 +11,13 @@ import ActivityTab from '../../components/admin/tabs/ActivityTab';
 import { User } from '../../types';
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'leads' | 'email' | 'users' | 'activity'>('leads');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as 'leads' | 'email' | 'users' | 'activity') || 'leads';
+
+  const setActiveTab = (tab: 'leads' | 'email' | 'users' | 'activity') => {
+    setSearchParams({ tab });
+  };
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
@@ -78,6 +84,20 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  /* Notification Logic */
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
+    Notification.permission
+  );
+
+  const requestNotificationPermission = async () => {
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === 'granted') {
+      toast.success('Notifications enabled!');
+      new Notification('OIS Admin', { body: 'Notifications are now active.' });
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     navigate('/admin/login');
@@ -126,6 +146,27 @@ const AdminDashboard: React.FC = () => {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
+
+        {/* Notification Banner */}
+        {notificationPermission === 'default' && (
+          <div className="mb-4 mt-6 mx-4 sm:mx-0 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-3">
+              <span className="p-2 bg-indigo-100 dark:bg-indigo-800/50 rounded-lg text-indigo-600 dark:text-indigo-300">
+                <Mail className="w-5 h-5" />
+              </span>
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Enable Real-Time Alerts</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400">Get notified instantly when new leads arrive.</p>
+              </div>
+            </div>
+            <button
+              onClick={requestNotificationPermission}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm whitespace-nowrap ml-4"
+            >
+              Enable
+            </button>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex space-x-4 mb-6 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-0 overflow-x-auto no-scrollbar">
